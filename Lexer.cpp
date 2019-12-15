@@ -29,12 +29,13 @@ string *Lexer::lexer(string filePath) {
   for (i = 0; i < linesNum; i++) {
 
     line = linesVector.at(i);
-    bool isMethod = regex_match(line, r);
+    //bool isMethod = regex_match(line, r);
+    bool isMethod = isCommandMethod(line);
     //var lines
     if (line.find("var") != string::npos) {
       addVarTokensToVector(line, tokensVector);
     } else if (isMethod) { //Method lines
-      addCommandTokensToVector(line, tokensVector);
+      addMethodTokensToVector(line, tokensVector);
     } else if (line.find("while") != string::npos
         || line.find("if") != string::npos) { //while and if lines.
       vector<std::string> tokens;
@@ -58,22 +59,36 @@ string *Lexer::lexer(string filePath) {
 
         vector<std::string> innerLinesTokens;
         string innerLineToken;
-        istringstream tokenStream(innerLine);
-        if (regex_match(line, r)) { // if its a method
-          addCommandTokensToVector(innerLine, linesVector);
+        istringstream innerTokenStream(innerLine);
+        if (isCommandMethod(innerLine)) { // if its a method
+          addMethodTokensToVector(innerLine, tokensVector);
         } else { //if its a var assignment
-          while (getline(tokenStream, innerLineToken, '=')) {
-            innerLinesTokens.push_back(token);//TODO to think how to interpret math expressions with variables.
+          while (getline(innerTokenStream, innerLineToken, '=')) {
+            innerLinesTokens.push_back(innerLineToken);//TODO to think how to interpret math expressions with variables.
           }
-          for(string intok : innerLinesTokens){
+          for (string intok : innerLinesTokens) {
             tokensVector.push_back(intok);
           }
         }
         index++;
       }
-      push
+      tokensVector.push_back("}");
 
       i = index;
+
+    } else {
+      string withoutSpaces = line;
+      withoutSpaces.erase(std::remove(withoutSpaces.begin(),
+                                      withoutSpaces.end(), ' '), withoutSpaces.end());
+      vector<std::string> lineTokens;
+      string lineToken;
+      istringstream lineTokenStream(withoutSpaces);
+      while (getline(lineTokenStream, lineToken, '=')) {
+        lineTokens.push_back(lineToken);
+      }
+      for (string intok : lineTokens) {
+        tokensVector.push_back(intok);
+      }
 
     }
 
@@ -92,7 +107,16 @@ string *Lexer::lexer(string filePath) {
   return tokens;
 
 }
-void Lexer::addCommandTokensToVector(const string &line, vector<string> &tokensVector) const {
+bool Lexer::isCommandMethod(const string &line) const {
+  string lowerCaseLine = line;
+  transform(lowerCaseLine.begin(), lowerCaseLine.end(), lowerCaseLine.begin(), ::tolower);
+  bool isMethod = lowerCaseLine.find("print") != string::npos
+      || lowerCaseLine.find("sleep") != string::npos
+      || lowerCaseLine.find("connectcontrolclient") != string::npos
+      || lowerCaseLine.find("opendataserver") != string::npos;
+  return isMethod;
+}
+void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVector) const {
   vector<string> tokens;
   string token;
   istringstream tokenStream(line);

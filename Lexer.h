@@ -17,7 +17,8 @@ class Lexer {
   string *lexer(string filePath);
 
   void addVarTokensToVector(const string &line, std::vector<string> &tokensVector) const;
-  void addCommandTokensToVector(const string &line, vector<string> &tokensVector) const;
+  void addMethodTokensToVector(const string &line, vector<string> &tokensVector) const;
+  bool isCommandMethod(const string &line) const;
 };
 
 #endif //BIUADVANCEDPROG1__LEXER_H_

@@ -64,10 +64,7 @@ string *Lexer::lexer(string filePath) {
           addMethodTokensToVector(innerLine, tokensVector);
         } else { //if its a var assignment
           while (getline(innerTokenStream, innerLineToken, '=')) {
-            innerLinesTokens.push_back(innerLineToken);//TODO to think how to interpret math expressions with variables.
-          }
-          for (string intok : innerLinesTokens) {
-            tokensVector.push_back(intok);
+            tokensVector.push_back(innerLineToken);//TODO to think how to interpret math expressions with variables.
           }
         }
         index++;
@@ -84,14 +81,10 @@ string *Lexer::lexer(string filePath) {
       string lineToken;
       istringstream lineTokenStream(withoutSpaces);
       while (getline(lineTokenStream, lineToken, '=')) {
-        lineTokens.push_back(lineToken);
+        tokensVector.push_back(lineToken);
+        //lineTokens.push_back();
       }
-      for (string intok : lineTokens) {
-        tokensVector.push_back(intok);
-      }
-
     }
-
   }
 
   string tokens[tokensVector.size()];
@@ -124,25 +117,38 @@ void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVe
     tokens.push_back(token);
   }
   tokensVector.push_back(tokens.at(0));
-  tokensVector.push_back(tokens.at(1).substr(0, tokens.at(1).length() - 1));
+
+  //has more than one parameters
+  if (tokens.at(1).find(",") != string::npos) {
+    string parameters = tokens.at(1);
+    parameters.erase(std::remove(parameters.begin(),
+                                 parameters.end(), ')'), parameters.end());
+    vector<string> tokens1;
+    string token1;
+    istringstream tokenStream1(parameters);
+    while (getline(tokenStream1, token1, ',')) {
+      tokensVector.push_back(token1);
+      //tokens.push_back(token1);
+    }
+  } else {
+    tokensVector.push_back(tokens.at(1).substr(0, tokens.at(1).length() - 1));
+
+  }
 }
 void Lexer::addVarTokensToVector(const string &line, vector<string> &tokensVector) const {
   vector<string> tokens;
   string token;
   istringstream tokenStream(line);
   while (getline(tokenStream, token, ' ')) {
-    tokens.push_back(token);
-  }
-  for (string innerToken : tokens) {
-    if (innerToken.find("sim") != string::npos) {
+    if (token.find("sim") != string::npos) {
       tokensVector.push_back("sim");
 
-      string inParens = innerToken.substr(
-          innerToken.find_first_of("\""),
-          innerToken.find_first_of(')') - innerToken.find_first_of("\""));
+      string inParens = token.substr(
+          token.find_first_of("\""),
+          token.find_first_of(')') - token.find_first_of("\""));
       tokensVector.push_back(inParens);
     } else {
-      tokensVector.push_back(innerToken);
+      tokensVector.push_back(token);
     }
   }
 }

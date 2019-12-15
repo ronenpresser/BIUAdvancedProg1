@@ -11,8 +11,8 @@ void Parser::parse(string *tokensArray) {
 
   while(index < tokensArray->length()){
     Command c =this->commands_map[tokensArray[index]];
-    if(c != null){
-      index+= c.execute();
-    }
+//    if(c != null){
+//      index+= c.execute();
+//    }
   }
 }

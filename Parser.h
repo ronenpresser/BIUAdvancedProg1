@@ -12,6 +12,7 @@ using namespace std;
 class Parser {
  private:
   map<string, Command> commands_map;
+  map<string,tuple<double,string>> symbol_table;
  public:
   void parse(string tokensArray[]);
 

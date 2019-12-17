@@ -10,6 +10,12 @@
     <node>/instrumentation/airspeed-indicator/indicated-speed-kt</node>
 	</chunk>
 	<chunk>
+    <name>heading-indicator_offset-deg</name>
+	<type>float</type>
+	<format>%f</format>
+    <node>//instrumentation/heading-indicator/offset-deg</node>
+	</chunk>
+	<chunk>
     <name>altimeter_indicated-altitude-ft</name>
 	<type>float</type>
 	<format>%f</format>

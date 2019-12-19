@@ -36,8 +36,8 @@ string *Lexer::lexer(string filePath) {
       addVarTokensToVector(line, tokensVector);
     } else if (isMethod) { //Method lines
       addMethodTokensToVector(line, tokensVector);
-    } else if (line.find("while") != string::npos
-        || line.find("if") != string::npos) { //while and if lines.
+    } else if ((line.find("while") != string::npos
+        || line.find("if") != string::npos) && line.find('{') != string::npos) { //while and if lines.
       vector<std::string> tokens;
       string token;
       istringstream tokenStream(line);

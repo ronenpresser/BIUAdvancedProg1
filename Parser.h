@@ -6,16 +6,28 @@
 #define BIUADVANCEDPROG1__PARSER_H_
 #include <string>
 #include <map>
-#include "Command.h"
 
 using namespace std;
+class Command{
+
+
+};
+
+class Symbol{
+
+
+};
 class Parser {
  private:
   map<string, Command> commands_map;
-  map<string,tuple<double,string>> symbol_table;
+  map<string, Symbol> symbol_table;
  public:
   void parse(string tokensArray[]);
-
+  void buildMaps(string tokensArray[]);
 };
+
+
+
+
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

@@ -11,10 +11,6 @@
 
 using namespace std;
 
-class ex1 {
-
-};
-
 class Value : public Expression {
  private:
   double value;
@@ -69,7 +65,7 @@ class Variable : public Expression {
   }
 };
 
-class Interpreter {
+class InterpretTool {
 
  private:
   map<string, double> varMap;
@@ -78,7 +74,7 @@ class Interpreter {
 
   void setVariables(string expressionString);
 
-  ~Interpreter() {
+  ~InterpretTool() {
     if (!varMap.empty()) {
       varMap.clear();
     }

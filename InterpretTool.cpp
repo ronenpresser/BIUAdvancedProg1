@@ -5,7 +5,7 @@
 #include <queue>
 #include <stack>
 #include <sstream>
-#include "ex1.h"
+#include "InterpretTool.h"
 #include <map>
 #include <string>
 #include <iostream>
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-Expression *Interpreter::interpret(string expressionString) {
+Expression *InterpretTool::interpret(string expressionString) {
 
   if (expressionString == "" || (count(expressionString.begin(), expressionString.end(), '(')
       != count(expressionString.begin(), expressionString.end(), ')')))
@@ -194,7 +194,7 @@ Expression *Interpreter::interpret(string expressionString) {
   return e;
 }
 
-void Interpreter::setVariables(string expressionString) {
+void InterpretTool::setVariables(string expressionString) {
 
   if (expressionString.find('=') == string::npos) {
     throw "illegal variable assignment!";

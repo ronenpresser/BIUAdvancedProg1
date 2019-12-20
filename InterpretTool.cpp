@@ -14,7 +14,7 @@
 
 using namespace std;
 
-Expression *InterpretTool::interpret(string expressionString) {
+Expression *InterpretTool::interpretMathExpression(string expressionString) {
 
   if (expressionString == "" || (count(expressionString.begin(), expressionString.end(), '(')
       != count(expressionString.begin(), expressionString.end(), ')')))
@@ -24,6 +24,186 @@ Expression *InterpretTool::interpret(string expressionString) {
   //the operator and if it is an unary operator.
   stack<tuple<string, bool>> operatorStack;
   string operatorsString = "-+/*";
+
+  //Create a map or dictionary that holds the precedences of operators.
+  //The tuple is built with the precedence of an operator and if its left associative.
+  map<string, tuple<int, bool>> operatorsPrecs = map<string, tuple<int, bool>>();
+  operatorsPrecs.insert(pair<string, tuple<int, bool>>("+", tuple<int, bool>(1, true)));
+  operatorsPrecs.insert(pair<string, tuple<int, bool>>("-", tuple<int, bool>(1, true)));
+  operatorsPrecs.insert(pair<string, tuple<int, bool>>("*", tuple<int, bool>(2, true)));
+  operatorsPrecs.insert(pair<string, tuple<int, bool>>("/", tuple<int, bool>(2, true)));
+
+  for (unsigned i = 0; i < expressionString.length(); i++) {
+
+    char token = expressionString[i];
+    //Convert the char to string so we can push it into the strings queue.
+    string a(1, token);
+    //Check for vars
+    if (token == '_' || islower(token)) {
+      if (i != 0) {
+        //if there is a - before a variable , its not valid.
+        if (expressionString[i - 1] == '-') {
+          throw "Invalid math expression.";
+        }
+      }
+      int start = i + 1;
+      int end = 1;
+
+      while (isalpha(expressionString[start]) || isdigit(expressionString[start])
+          || expressionString[start] == '_') {
+        start++;
+        end++;
+      }
+      if (!this->varMap.count(expressionString.substr(i, end))) {
+        throw "At least one of the vars in the expression was not set, or its name is wrong.";
+      }
+      outputQueue.push(tuple<string, bool>(expressionString.substr(i, end), false));
+      i = start - 1;
+
+    }
+      //check for numbers
+    else if (isdigit(token)) {
+      int start = i + 1;
+      int end = 1;
+      while (isdigit(expressionString[start]) || expressionString[start] == '.') {
+        start++;
+        end++;
+      }
+      outputQueue.push(tuple<string, bool>(to_string(stod(expressionString.substr(i, end))), false));
+
+      i = start - 1;
+
+    }
+      //check for operators
+    else if (operatorsString.find(token) != string::npos) {
+
+      //check if there is an operator before and after the current token ,
+      // or if its an - and there is a variable after.
+      if ((((i + 1 <= expressionString.length() - 1
+          && operatorsString.find(expressionString[i + 1]) != string::npos))
+          || (token == '-'
+              && ((i + 1 <= expressionString.length() - 1 && (isalpha(expressionString[i + 1])))
+                  || expressionString[i + 1] == '_')))) {
+        throw "illegal math expression";
+      }
+
+      while (!operatorStack.empty()
+          && ((get<0>(operatorsPrecs[get<0>(operatorStack.top())]) > get<0>(operatorsPrecs[a]))
+              && get<1>(operatorsPrecs[get<0>(operatorStack.top())]))
+          && get<0>(operatorStack.top()) != "(") {
+        outputQueue.push(operatorStack.top());
+        operatorStack.pop();
+      }
+      if (i == 0) {
+        if ((token == '-' || token == '+') && expressionString[i + 1] == '(')
+          operatorStack.push(tuple<string, bool>(a, true));
+        else
+          throw "illegal math expression";
+      } else if ((token == '-' || token == '+') && isdigit(expressionString[i + 1])
+          && expressionString[i - 1] == '(') { // "+3" or "-3"
+        int start = i + 1;
+        int end = 1;
+        while (isdigit(expressionString[start]) || expressionString[start] == '.') {
+          start++;
+          end++;
+        }
+        outputQueue.push(tuple<string, bool>(to_string(stod(expressionString.substr(i, end))), false));
+
+        i = start - 1;
+      } else {
+        if (expressionString[i - 1] == '('
+            && (token == '-' || token == '+') && expressionString[i + 1] == '(')
+          operatorStack.push(tuple<string, bool>(a, true));
+        else
+          operatorStack.push(tuple<string, bool>(a, false));
+      }
+    } else if (token == '(') {
+      operatorStack.push(tuple<string, bool>(a, false));
+    } else if (token == ')') {
+      while (!operatorStack.empty() && get<0>(operatorStack.top()) != "(") {
+        outputQueue.push(operatorStack.top());
+        operatorStack.pop();
+      }
+      if (operatorStack.empty()) {
+        throw "Invalid math expression.";
+      }
+      operatorStack.pop();
+    } else { //there are not valid chars in the expression.
+      throw "Invalid math expression.";
+
+    }
+  }
+
+  while (!operatorStack.empty()) {
+    outputQueue.push(operatorStack.top());
+    operatorStack.pop();
+  }
+
+  stack<Expression *> expressionsStack;
+  while (!outputQueue.empty()) {
+    tuple<string, bool> frontTuple = outputQueue.front();
+    bool isUnary = get<1>(frontTuple);
+    string front = get<0>(outputQueue.front());
+    outputQueue.pop();
+    try {
+      double n = stod(front);
+
+      expressionsStack.push(new Value(n));
+
+    } catch (const invalid_argument &e) {
+      if (varMap.count(front))
+        expressionsStack.push(new Variable(front, varMap[front]));
+      if (operatorsString.find(front) != string::npos) {
+
+        Expression *right = expressionsStack.top();
+        expressionsStack.pop();
+
+        if (isUnary) {
+          if (front == "+") {
+            expressionsStack.push(new UPlus(right));
+          }
+          if (front == "-") {
+            expressionsStack.push(new UMinus(right));
+          }
+        } else {
+
+          Expression *left = expressionsStack.top();
+          expressionsStack.pop();
+
+          if (front == "+") {
+            expressionsStack.push(new Plus(left, right));
+          }
+          if (front == "-") {
+            expressionsStack.push(new Minus(left, right));
+          }
+          if (front == "*") {
+            expressionsStack.push(new Mul(left, right));
+          }
+          if (front == "/") {
+            expressionsStack.push(new Div(left, right));
+          }
+        }
+      }
+    }
+  }
+
+  operatorsPrecs.clear();
+  Expression *e = expressionsStack.top();
+  expressionsStack.pop();
+
+  return e;
+}
+
+Expression *InterpretTool::interpretBoolExpression(string expressionString) {
+
+  if (expressionString == "" || (count(expressionString.begin(), expressionString.end(), '(')
+      != count(expressionString.begin(), expressionString.end(), ')')))
+    throw "Invalid math expression.";
+
+  queue<tuple<string, bool>> outputQueue;
+  //the operator and if it is an unary operator.
+  stack<tuple<string, bool>> operatorStack;
+  string operatorsString = "-+/* < > == <= >= !=";
 
   //Create a map or dictionary that holds the precedences of operators.
   //The tuple is built with the precedence of an operator and if its left associative.
@@ -412,6 +592,23 @@ double Div::calculate() {
     }
 
     return leftExp / rightExp;
+
+  }
+  catch (const char *e) {
+    throw e;
+  }
+}
+
+double BooleanType::calculate() {
+  try {
+    double rightExp = this->right->calculate();
+    double leftExp = this->left->calculate();
+    if (rightExp == 0) {
+
+      throw "Cannot divide by zero";
+    }
+
+    return this->boolOperators[this->boolCon](leftExp, rightExp);
 
   }
   catch (const char *e) {

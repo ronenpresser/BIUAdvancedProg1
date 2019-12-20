@@ -25,8 +25,8 @@ def send_data():
     """
     SENDING DATA TO SERVER EXAMPLE
     """
-    EXAMPLE_VARIABLE = '/controls/engines/engine/throttle'
-    EXAMPLE_VALUE = 66
+    EXAMPLE_VARIABLE = '/controls/switches/magnetos'
+    EXAMPLE_VALUE = 4
 
     client = socket.socket()
     client.connect((TARGET_IP, TARGET_PORT))

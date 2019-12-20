@@ -19,6 +19,10 @@ class Lexer {
   void addVarTokensToVector(const string &line, std::vector<string> &tokensVector) const;
   void addMethodTokensToVector(const string &line, vector<string> &tokensVector) const;
   bool isCommandMethod(const string &line) const;
+  bool isFuncCommand(const string &line) const;
+  bool isWhileOrConditionCommand(const string &line) const;
+  void toLowerCase(string &lowerCaseLine) const;
+  void toWithoutSpaces(string &withoutSpaces) const;
 };
 
 #endif //BIUADVANCEDPROG1__LEXER_H_

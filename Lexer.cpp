@@ -30,14 +30,55 @@ string *Lexer::lexer(string filePath) {
 
     line = linesVector.at(i);
     //bool isMethod = regex_match(line, r);
-    bool isMethod = isCommandMethod(line);
+    bool isCommand = isCommandMethod(line);
+    bool isFunc = isFuncCommand(line);
+    bool isWhileOrIf = isWhileOrConditionCommand(line);
     //var lines
     if (line.find("var") != string::npos) {
       addVarTokensToVector(line, tokensVector);
-    } else if (isMethod) { //Method lines
+    } else if (isCommand) { //Method lines
       addMethodTokensToVector(line, tokensVector);
-    } else if ((line.find("while") != string::npos
-        || line.find("if") != string::npos) && line.find('{') != string::npos) { //while and if lines.
+    } else if (isWhileOrIf) { //while and if lines.
+      string lowerCaseLine = line;
+      toLowerCase(lowerCaseLine);
+      if (line.substr(0, 2) == "if") {
+        tokensVector.push_back("if");
+        line = line.substr(2, line.length() - 2 - 1);
+      } else if (line.substr(0, 5) == "while") {
+        tokensVector.push_back("while");
+        line = line.substr(5, line.length() - 5 - 1);
+      }
+      string noSpaces = line;
+      toWithoutSpaces(noSpaces);
+      tokensVector.push_back(noSpaces);
+      tokensVector.push_back("{");
+      int index = i + 1;
+      while (index <= linesVector.size() && linesVector.at(index) != "}") {
+        string innerLine = linesVector.at(index);
+        //trim all spaces.
+        innerLine.erase(std::remove(innerLine.begin(),
+                                    innerLine.end(), ' '), innerLine.end());
+        //trim tabs.
+        innerLine.erase(std::remove(innerLine.begin(),
+                                    innerLine.end(), '\t'), innerLine.end());
+
+        vector<std::string> innerLinesTokens;
+        string innerLineToken;
+        istringstream innerTokenStream(innerLine);
+        if (isCommandMethod(innerLine)) { // if its a method
+          addMethodTokensToVector(innerLine, tokensVector);
+        } else { //if its a var assignment
+          while (getline(innerTokenStream, innerLineToken, '=')) {
+            tokensVector.push_back(innerLineToken);
+          }
+        }
+        index++;
+      }
+      tokensVector.push_back("}");
+
+      i = index;
+
+    } else if (isFunc) {
       vector<std::string> tokens;
       string token;
       istringstream tokenStream(line);
@@ -64,7 +105,7 @@ string *Lexer::lexer(string filePath) {
           addMethodTokensToVector(innerLine, tokensVector);
         } else { //if its a var assignment
           while (getline(innerTokenStream, innerLineToken, '=')) {
-            tokensVector.push_back(innerLineToken);//TODO to think how to interpret math expressions with variables.
+            tokensVector.push_back(innerLineToken);
           }
         }
         index++;
@@ -75,8 +116,7 @@ string *Lexer::lexer(string filePath) {
 
     } else {
       string withoutSpaces = line;
-      withoutSpaces.erase(std::remove(withoutSpaces.begin(),
-                                      withoutSpaces.end(), ' '), withoutSpaces.end());
+      toWithoutSpaces(withoutSpaces);
       vector<std::string> lineTokens;
       string lineToken;
       istringstream lineTokenStream(withoutSpaces);
@@ -100,14 +140,39 @@ string *Lexer::lexer(string filePath) {
   return tokens;
 
 }
+void Lexer::toWithoutSpaces(string &withoutSpaces) const {
+  withoutSpaces.erase(remove(withoutSpaces.begin(),
+                             withoutSpaces.end(), ' '), withoutSpaces.end());
+}
+bool Lexer::isWhileOrConditionCommand(const string &line) const {
+  return (line.find("while") != string::npos
+      || line.find("if") != string::npos)
+      && line.find("<") != string::npos
+      && line.find(">") != string::npos
+      && line.find(">=") != string::npos
+      && line.find("<=") != string::npos
+      && line.find("==") != string::npos
+      && line.find("!=") != string::npos;
+}
+bool Lexer::isFuncCommand(const string &line) const {
+
+  return line.find('{') != string::npos && line.find("var") != string::npos;
+
+}
 bool Lexer::isCommandMethod(const string &line) const {
-  string lowerCaseLine = line;
-  transform(lowerCaseLine.begin(), lowerCaseLine.end(), lowerCaseLine.begin(), ::tolower);
-  bool isMethod = lowerCaseLine.find("print") != string::npos
-      || lowerCaseLine.find("sleep") != string::npos
-      || lowerCaseLine.find("connectcontrolclient") != string::npos
-      || lowerCaseLine.find("opendataserver") != string::npos;
+  string lowerCase = line;
+  toLowerCase(lowerCase);
+  bool isMethod = lowerCase.find("print(") != string::npos
+      || lowerCase.find("sleep(") != string::npos
+      || lowerCase.find("connectcontrolclient(") != string::npos
+      || lowerCase.find("opendataserver(") != string::npos;
   return isMethod;
+}
+void Lexer::toLowerCase(string &lowerCaseLine) const {
+  transform(lowerCaseLine.begin(),
+            lowerCaseLine.end(),
+            lowerCaseLine.begin(),
+            tolower);
 }
 void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVector) const {
   vector<string> tokens;

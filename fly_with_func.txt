@@ -52,7 +52,7 @@ takeoff(var x) {
 	rudder = (h0 - heading)/80
 	aileron = -roll / 70
 	elevator = pitch / 50
-        Print(alt)
+    Print(alt)
 	Sleep(250)
    }
 }

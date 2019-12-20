@@ -8,6 +8,7 @@
 #include <string>
 #include "Expression.h"
 #include <map>
+#include <functional>
 
 using namespace std;
 
@@ -70,7 +71,7 @@ class InterpretTool {
  private:
   map<string, double> varMap;
  public:
-  Expression *interpret(string expressionString);
+  Expression *interpretMathExpression(string expressionString);
 
   void setVariables(string expressionString);
 
@@ -79,6 +80,7 @@ class InterpretTool {
       varMap.clear();
     }
   }
+  Expression *interpretBoolExpression(string expressionString);
 };
 
 class UnaryOperator : public Expression {
@@ -156,6 +158,59 @@ class Div : public BinaryOperator {
   Div(Expression *leftExp, Expression *rightExp) : BinaryOperator(leftExp, rightExp) {}
 
   virtual ~Div();
+
+  double calculate();
+};
+
+class BooleanType : public BinaryOperator {
+ private:
+  string boolCon;
+  map<string, const function<bool(const double &, const double &)>> boolOperators;
+ public:
+  BooleanType(Expression *leftExp, string boolOperator, Expression *rightExp) : BinaryOperator(leftExp, rightExp) {
+    boolCon = boolOperator;
+    //<,>,<=,>=,==,!=
+
+    auto stringBoolPair = make_pair(
+        "<",
+        [](const double &left, const double &right) {
+          return left < right;
+        });
+    boolOperators.insert(stringBoolPair);
+    auto stringBoolPair2 = make_pair(
+        "<", [](const double &left, const double &right) {
+          return left < right;
+        });
+    boolOperators.insert(stringBoolPair2);
+    auto stringBoolPair3 = make_pair(
+        ">", [](const double &left, const double &right) {
+          return left > right;
+        });
+    boolOperators.insert(stringBoolPair3);
+    auto stringBoolPair4 = make_pair(
+        "<=", [](const double &left, const double &right) {
+          return left <= right;
+        });
+    boolOperators.insert(stringBoolPair4);
+    auto stringBoolPair5 = make_pair(
+        ">=", [](const double &left, const double &right) {
+          return left >= right;
+        });
+    boolOperators.insert(stringBoolPair5);
+    auto stringBoolPair6 = make_pair(
+        "==", [](const double &left, const double &right) {
+          return left == right;
+        });
+    boolOperators.insert(stringBoolPair6);
+    auto stringBoolPair7 = make_pair(
+        "!=", [](const double &left, const double &right) {
+          return left != right;
+        });
+    boolOperators.insert(stringBoolPair7);
+
+  }
+
+  virtual ~BooleanType();
 
   double calculate();
 };

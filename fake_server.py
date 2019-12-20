@@ -56,8 +56,9 @@ def get_gear_variable(var_name):
 
 def gear_variable_to_string():
     with gear_variables_lock:
-        print("Printing all values before sending")
-        [print(str(variable.var_value),str(variable.var_name)) for variable in gear_variables]
+        print("len ", len(gear_variables))
+        #print("Printing all values before sending")
+        #[print(str(variable.var_value),str(variable.var_name)) for variable in gear_variables]
         return ','.join(str(variable.var_value) for variable in gear_variables).encode('ASCII')
 
 

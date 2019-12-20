@@ -6,6 +6,7 @@
 #define BIUADVANCEDPROG1__PARSER_H_
 #include <string>
 #include <map>
+#include <vector>
 
 using namespace std;
 class Command{
@@ -22,8 +23,8 @@ class Parser {
   map<string, Command> commands_map;
   map<string, Symbol> symbol_table;
  public:
-  void parse(string tokensArray[]);
-  void buildMaps(string tokensArray[]);
+  void parse(vector<string> tokensVector);
+  void buildMaps(vector<string> tokensVector);
 };
 
 

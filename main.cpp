@@ -10,8 +10,8 @@ int main(int argc, char const *argv[]) {
 
   lexer->lexer("../fly.txt");
 
-  parser->buildMaps(lexer->lexer("../fly.txt"));
-  parser->parse(lexer->lexer(argv[1]));
+  //parser->buildMaps(lexer->lexer("../fly.txt"));
+  //parser->parse(lexer->lexer(argv[1]));
 
   delete lexer;
   delete parser;

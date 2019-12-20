@@ -9,7 +9,7 @@
 #include <regex>
 using namespace std;
 
-string *Lexer::lexer(string filePath) {
+vector<string> Lexer::lexer(string filePath) {
 
   string line;
   int linesNum = 0;
@@ -33,8 +33,9 @@ string *Lexer::lexer(string filePath) {
     bool isCommand = isCommandMethod(line);
     bool isFunc = isFuncCommand(line);
     bool isWhileOrIf = isWhileOrConditionCommand(line);
+    bool isVarCommand = isVarDefineCommand(line);
     //var lines
-    if (line.find("var") != string::npos) {
+    if (isVarCommand) {
       addVarTokensToVector(line, tokensVector);
     } else if (isCommand) { //Method lines
       addMethodTokensToVector(line, tokensVector);
@@ -117,27 +118,25 @@ string *Lexer::lexer(string filePath) {
     } else {
       string withoutSpaces = line;
       toWithoutSpaces(withoutSpaces);
-      vector<std::string> lineTokens;
       string lineToken;
       istringstream lineTokenStream(withoutSpaces);
       while (getline(lineTokenStream, lineToken, '=')) {
         tokensVector.push_back(lineToken);
-        //lineTokens.push_back();
       }
     }
   }
 
-  string tokens[tokensVector.size()];
-
-  for (unsigned i = 0; i < tokensVector.size(); i++) {
-
-    tokens[i] = tokensVector.at(i);
-
-  }
+//  string tokens[tokensVector.size()];
+//
+//  for (unsigned i = 0; i < tokensVector.size(); i++) {
+//
+//    tokens[i] = tokensVector.at(i);
+//
+//  }
 
   file.close();
 
-  return tokens;
+  return tokensVector;
 
 }
 void Lexer::toWithoutSpaces(string &withoutSpaces) const {
@@ -146,17 +145,24 @@ void Lexer::toWithoutSpaces(string &withoutSpaces) const {
 }
 bool Lexer::isWhileOrConditionCommand(const string &line) const {
   return (line.find("while") != string::npos
-      || line.find("if") != string::npos)
+      || line.find("if") != string::npos
       && line.find("<") != string::npos
       && line.find(">") != string::npos
       && line.find(">=") != string::npos
       && line.find("<=") != string::npos
       && line.find("==") != string::npos
-      && line.find("!=") != string::npos;
+      && line.find("!=") != string::npos);
 }
 bool Lexer::isFuncCommand(const string &line) const {
 
   return line.find('{') != string::npos && line.find("var") != string::npos;
+
+}
+
+bool Lexer::isVarDefineCommand(const string &line) const {
+
+  return line.find("var") != string::npos
+      && (line.find("<-") != string::npos || line.find("->") != string::npos);
 
 }
 bool Lexer::isCommandMethod(const string &line) const {
@@ -172,7 +178,7 @@ void Lexer::toLowerCase(string &lowerCaseLine) const {
   transform(lowerCaseLine.begin(),
             lowerCaseLine.end(),
             lowerCaseLine.begin(),
-            tolower);
+            ::tolower);
 }
 void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVector) const {
   vector<string> tokens;

@@ -4,13 +4,12 @@
 
 #include "Parser.h"
 
-
-void Parser::parse(string *tokensArray) {
+void Parser::parse(vector<string> tokensVector) {
 
   int index = 0;
 
-  while(index < tokensArray->length()){
-    Command c =this->commands_map[tokensArray[index]];
+  while (index < tokensVector.size()) {
+    Command c = this->commands_map[tokensVector[index]];
 //    if(c != null){
 //      index+= c.execute();
 //    }

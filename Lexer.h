@@ -14,7 +14,7 @@ using namespace std;
 class Lexer {
 
  public:
-  string *lexer(string filePath);
+  vector<string> lexer(string filePath);
 
   void addVarTokensToVector(const string &line, std::vector<string> &tokensVector) const;
   void addMethodTokensToVector(const string &line, vector<string> &tokensVector) const;
@@ -23,6 +23,7 @@ class Lexer {
   bool isWhileOrConditionCommand(const string &line) const;
   void toLowerCase(string &lowerCaseLine) const;
   void toWithoutSpaces(string &withoutSpaces) const;
+  bool isVarDefineCommand(const string &line) const;
 };
 
 #endif //BIUADVANCEDPROG1__LEXER_H_

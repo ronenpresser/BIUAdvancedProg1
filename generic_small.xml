@@ -25,7 +25,7 @@
     <name>heading-indicator_offset-deg</name>
 	<type>float</type>
 	<format>%f</format>
-    <node>//instrumentation/heading-indicator/offset-deg</node>
+    <node>/instrumentation/heading-indicator/offset-deg</node>
 	</chunk>
 	<chunk>
     <name>altimeter_indicated-altitude-ft</name>

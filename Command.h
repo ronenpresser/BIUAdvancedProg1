@@ -27,7 +27,7 @@ class ConditionParser : public Command {
  private:
   list<Command> inner_commands;
  public:
-  virtual int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpret);
+  virtual int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpret){}
   bool isConditionTrue(string conditionString, InterpretTool &interpret) {
     return (interpret).interpretBoolExpression(conditionString)->calculate();
   }

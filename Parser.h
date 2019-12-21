@@ -24,7 +24,7 @@ class Symbol {
 
 class SymbolTable {
  private:
-  map<string, Symbol *> symbol_map;
+  map<string, Variable *> symbol_map;
  public:
 
   void setValue(string varName, float value) {
@@ -32,8 +32,10 @@ class SymbolTable {
       this->symbol_map[varName]->setValue(value);
     }
   }
-  void insert(string varName, Symbol *symbol) {
-    this->symbol_map.insert(make_pair(varName, symbol));
+  void insert(string varName, float val, string path) {
+    Variable *var = new Variable(varName, val, path);
+    this->symbol_map.insert(make_pair(varName, var));
+    delete var;
   }
   void clear() {
     this->symbol_map.clear();
@@ -43,8 +45,10 @@ class SymbolTable {
 
 class Parser {
  private:
-  map<string, Command *> commands_map;
+  map<string, Command> commands_map;
   SymbolTable symbol_table;
+  map<string, Variable> sim_var_table;
+  map<int, string> index_sim_table;
   InterpretTool *interpret_tool;
 
  public:
@@ -58,7 +62,7 @@ class Parser {
   InterpretTool *getInterpreter() {
     return this->interpret_tool;
   }
-  ~Parser() {
+  virtual ~Parser() {
     commands_map.clear();
     symbol_table.clear();
     delete interpret_tool;

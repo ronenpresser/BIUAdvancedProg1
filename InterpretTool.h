@@ -38,6 +38,7 @@ class Variable : public Expression {
   double value;
   string name;
   string simPath;
+  bool bindingDirection; // false for right, true for left.
  public:
   string getName() {
     return this->name;
@@ -47,9 +48,18 @@ class Variable : public Expression {
     this->value = val;
   }
 
+  bool getBindingDirection() {
+    return this->bindingDirection;
+  }
+
   virtual double calculate() {
     return value;
   }
+  Variable(string nameString, double val, string path, bool bindingDir) : value(val),
+                                                                          name(nameString),
+                                                                          simPath(path),
+                                                                          bindingDirection(bindingDir) {}
+
   Variable(string nameString, double val, string path) : value(val), name(nameString), simPath(path) {}
 
   Variable(string nameString, double val) : value(val), name(nameString) {}

@@ -31,7 +31,7 @@ vector<string> *Lexer::lexer(string filePath) {
     line = linesVector.at(i);
     //bool isMethod = regex_match(line, r);
     bool isCommand = isCommandMethod(line);
-    bool isFunc = isFuncCommand(line);
+    //bool isFunc = isFuncCommand(line);
     bool isWhileOrIf = isWhileOrConditionCommand(line);
     bool isVarCommand = isVarDefineCommand(line);
     //var lines
@@ -79,42 +79,6 @@ vector<string> *Lexer::lexer(string filePath) {
 
       i = index;
 
-    } else if (isFunc) {
-      vector<std::string> tokens;
-      string token;
-      istringstream tokenStream(line);
-      while (getline(tokenStream, token, ' ')) {
-        tokens.push_back(token);
-      }
-      for (string innerToken : tokens) {
-        tokensVector.push_back(innerToken);
-      }
-      int index = i + 1;
-      while (index <= linesVector.size() && linesVector.at(index) != "}") {
-        string innerLine = linesVector.at(index);
-        //trim all spaces.
-        innerLine.erase(std::remove(innerLine.begin(),
-                                    innerLine.end(), ' '), innerLine.end());
-        //trim tabs.
-        innerLine.erase(std::remove(innerLine.begin(),
-                                    innerLine.end(), '\t'), innerLine.end());
-
-        vector<std::string> innerLinesTokens;
-        string innerLineToken;
-        istringstream innerTokenStream(innerLine);
-        if (isCommandMethod(innerLine)) { // if its a method
-          addMethodTokensToVector(innerLine, tokensVector);
-        } else { //if its a var assignment
-          while (getline(innerTokenStream, innerLineToken, '=')) {
-            tokensVector.push_back(innerLineToken);
-          }
-        }
-        index++;
-      }
-      tokensVector.push_back("}");
-
-      i = index;
-
     } else {
       string withoutSpaces = line;
       toWithoutSpaces(withoutSpaces);
@@ -126,11 +90,41 @@ vector<string> *Lexer::lexer(string filePath) {
     }
   }
 
-//  string tokens[tokensVector.size()];
+//  else if (isFunc) {
+//    vector<std::string> tokens;
+//    string token;
+//    istringstream tokenStream(line);
+//    while (getline(tokenStream, token, ' ')) {
+//      tokens.push_back(token);
+//    }
+//    for (string innerToken : tokens) {
+//      tokensVector.push_back(innerToken);
+//    }
+//    int index = i + 1;
+//    while (index <= linesVector.size() && linesVector.at(index) != "}") {
+//      string innerLine = linesVector.at(index);
+//      //trim all spaces.
+//      innerLine.erase(std::remove(innerLine.begin(),
+//                                  innerLine.end(), ' '), innerLine.end());
+//      //trim tabs.
+//      innerLine.erase(std::remove(innerLine.begin(),
+//                                  innerLine.end(), '\t'), innerLine.end());
 //
-//  for (unsigned i = 0; i < tokensVector.size(); i++) {
+//      vector<std::string> innerLinesTokens;
+//      string innerLineToken;
+//      istringstream innerTokenStream(innerLine);
+//      if (isCommandMethod(innerLine)) { // if its a method
+//        addMethodTokensToVector(innerLine, tokensVector);
+//      } else { //if its a var assignment
+//        while (getline(innerTokenStream, innerLineToken, '=')) {
+//          tokensVector.push_back(innerLineToken);
+//        }
+//      }
+//      index++;
+//    }
+//    tokensVector.push_back("}");
 //
-//    tokens[i] = tokensVector.at(i);
+//    i = index;
 //
 //  }
 

@@ -6,49 +6,44 @@
 #ifndef BIUADVANCEDPROG1__COMMAND_H_
 #define BIUADVANCEDPROG1__COMMAND_H_
 
-#include <list>
 #include <string>
 #include <vector>
 #include "InterpretTool.h"
 
 using namespace std;
 
+class Parser;
 class Command {
  public:
-  virtual int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpreter) {}
+  virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
 };
 
 class SleepCommand : public Command {
  public:
-  int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpreter);
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };
 
 class ConditionParser : public Command {
  private:
-  list<Command> inner_commands;
+  vector<Command> inner_commands;
  public:
-  virtual int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpret){}
-  bool isConditionTrue(string conditionString, InterpretTool &interpret) {
-    return (interpret).interpretBoolExpression(conditionString)->calculate();
-  }
-  void setInnerCommands(list<Command> commandsList) {
-    this->inner_commands = commandsList;
-  }
-  list<Command> getInnerCommands() {
-    return inner_commands;
-  }
+  virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
+
+  bool isConditionTrue(string conditionString, Parser &pars);
+  void insert_to_inner_commands(Command c);
+  vector<Command> getInnerCommands();
 
 };
 
 class IfCommand : public ConditionParser {
  public:
-  int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpret);
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 
 };
 
 class LoopCommand : public ConditionParser {
  public:
-  int execute(vector<string> &tokensVector, int currentIndex, InterpretTool &interpret);
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };
 
 #endif //BIUADVANCEDPROG1__COMMAND_H_

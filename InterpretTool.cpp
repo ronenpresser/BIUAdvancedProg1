@@ -464,7 +464,6 @@ double BooleanExpression::calculate() {
     double rightExp = this->right->calculate();
     double leftExp = this->left->calculate();
     if (rightExp == 0) {
-
       throw "Cannot divide by zero";
     }
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "Command.h"
+#include "InterpretTool.h"
 
 using namespace std;
 
@@ -40,14 +40,18 @@ class SymbolTable {
   void clear() {
     this->symbol_map.clear();
   }
+  bool empty() {
+    return this->symbol_map.empty();
+  }
 
 };
 
+class Command;
 class Parser {
  private:
-  map<string, Command> commands_map;
+  map<string, Command*> commands_map;
   SymbolTable symbol_table;
-  map<string, Variable> sim_var_table;
+  map<string, Variable *> sim_var_table;
   map<int, string> index_sim_table;
   InterpretTool *interpret_tool;
 
@@ -59,14 +63,12 @@ class Parser {
 
   void parse(vector<string> *tokensVector);
   void buildMaps();
-  InterpretTool *getInterpreter() {
-    return this->interpret_tool;
-  }
-  virtual ~Parser() {
-    commands_map.clear();
-    symbol_table.clear();
-    delete interpret_tool;
-  }
+  InterpretTool *getInterpreter();
+  void insert_to_sim_var_table(string sim, Variable *var);
+  void insert_to_symbol_table(string varName, float val, string path);
+  virtual ~Parser();
+
+  //friend class Command;
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

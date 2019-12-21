@@ -3,27 +3,24 @@
 //
 
 #include "Parser.h"
-
+#include "Command.h"
 void Parser::parse(vector<string> *tokensVec) {
 
   int index = 0;
 
   while (index < tokensVec->size()) {
     if (this->commands_map.count(tokensVec->at(index))) {
-      Command c = this->commands_map[tokensVec->at(index)];
-      index += c.execute(*tokensVec, index, *this->interpret_tool);
+      Command *c = this->commands_map[tokensVec->at(index)];
+      index += c->execute(*tokensVec, index, this);
     }
   }
 }
 
 void Parser::buildMaps() {
 
-  SleepCommand sc;
-  this->commands_map.insert(make_pair("sleep", sc));
-  IfCommand ic;
-  this->commands_map.insert(make_pair("if", ic));
-  LoopCommand lc;
-  this->commands_map.insert(make_pair("while", lc));
+  this->commands_map.insert(make_pair("sleep", new SleepCommand()));
+  this->commands_map.insert(make_pair("if", new IfCommand()));
+  this->commands_map.insert(make_pair("while", new LoopCommand()));
 
   this->index_sim_table.insert(make_pair(0, "/instrumentation/airspeed-indicator/indicated-speed-kt"));
   this->index_sim_table.insert(make_pair(1, "/sim/time/warp"));
@@ -61,4 +58,31 @@ void Parser::buildMaps() {
   this->index_sim_table.insert(make_pair(33, "/controls/switches/master-bat"));
   this->index_sim_table.insert(make_pair(34, "/controls/switches/master-alt"));
   this->index_sim_table.insert(make_pair(35, "/engines/engine/rpm"));
+}
+
+InterpretTool *Parser::getInterpreter() {
+  return interpret_tool;
+}
+
+void Parser::insert_to_sim_var_table(string sim, Variable *var) {
+  this->sim_var_table.insert(make_pair(sim, var));
+}
+void Parser::insert_to_symbol_table(string varName, float val, string path) {
+  this->symbol_table.insert(varName, val, path);
+}
+Parser::~Parser() {
+  if (!commands_map.empty()) {
+    commands_map.clear();
+  }
+  if (!symbol_table.empty()) {
+    symbol_table.clear();
+  }
+  if (!sim_var_table.empty()) {
+    sim_var_table.clear();
+  }
+  if (!index_sim_table.empty()) {
+    index_sim_table.clear();
+  }
+  if (interpret_tool != nullptr)
+    delete interpret_tool;
 }

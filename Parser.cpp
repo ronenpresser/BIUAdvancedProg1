@@ -60,6 +60,28 @@ void Parser::buildMaps() {
   this->index_sim_table.insert(make_pair(35, "/engines/engine/rpm"));
 }
 
+void SymbolTable::setValue(string varName, float value) {
+  if (this->symbol_map.count(varName)) {
+    this->symbol_map[varName]->setValue(value);
+  }
+}
+void SymbolTable::insert(string varName, float val, string path, bool bindingDirec) {
+  Variable *var = new Variable(varName, val, path, bindingDirec);
+  this->symbol_map.insert(make_pair(varName, var));
+  delete var;
+}
+void SymbolTable::clear() {
+  this->symbol_map.clear();
+}
+bool SymbolTable::empty() {
+  return this->symbol_map.empty();
+}
+Variable *SymbolTable::getVariable(string key) {
+  return this->symbol_map[key]
+}
+bool SymbolTable::count(string key) {
+  return this->symbol_map.count(key);
+}
 InterpretTool *Parser::getInterpreter() {
   return interpret_tool;
 }
@@ -67,8 +89,19 @@ InterpretTool *Parser::getInterpreter() {
 void Parser::insert_to_sim_var_table(string sim, Variable *var) {
   this->sim_var_table.insert(make_pair(sim, var));
 }
-void Parser::insert_to_symbol_table(string varName, float val, string path) {
-  this->symbol_table.insert(varName, val, path);
+void Parser::insert_to_symbol_table(string varName, float val, string path, bool bindingDirec) {
+  this->symbol_table.insert(varName, val, path, bindingDirec);
+}
+
+Command *Parser::getCommand(string key) {
+  return commands_map[key];
+}
+bool Parser::isExistsInCommandsMap(string key) {
+  return commands_map.count(key);
+}
+
+bool Parser::isExistsInSymbolTable(string key) {
+  return symbol_table.count(key);
 }
 Parser::~Parser() {
   if (!commands_map.empty()) {

@@ -11,45 +11,24 @@
 
 using namespace std;
 
-class Symbol {
- private:
-  float value;
-  string sim_path;
- public:
-  void setValue(float value) {
-    this->value = value;
-  }
-
-};
-
 class SymbolTable {
  private:
   map<string, Variable *> symbol_map;
  public:
 
-  void setValue(string varName, float value) {
-    if (this->symbol_map.count(varName)) {
-      this->symbol_map[varName]->setValue(value);
-    }
-  }
-  void insert(string varName, float val, string path) {
-    Variable *var = new Variable(varName, val, path);
-    this->symbol_map.insert(make_pair(varName, var));
-    delete var;
-  }
-  void clear() {
-    this->symbol_map.clear();
-  }
-  bool empty() {
-    return this->symbol_map.empty();
-  }
+  void setValue(string varName, float value);
+  void insert(string varName, float val, string path, bool bindingDirec);
+  void clear();
+  bool empty();
 
+  bool count(string key);
+  Variable *getVariable(string key);
 };
 
 class Command;
 class Parser {
  private:
-  map<string, Command*> commands_map;
+  map<string, Command *> commands_map;
   SymbolTable symbol_table;
   map<string, Variable *> sim_var_table;
   map<int, string> index_sim_table;
@@ -65,10 +44,13 @@ class Parser {
   void buildMaps();
   InterpretTool *getInterpreter();
   void insert_to_sim_var_table(string sim, Variable *var);
-  void insert_to_symbol_table(string varName, float val, string path);
+  void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
+  Command* getCommand(string key);
+  bool isExistsInCommandsMap(string key);
   virtual ~Parser();
 
   //friend class Command;
+  bool isExistsInSymbolTable(string key);
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

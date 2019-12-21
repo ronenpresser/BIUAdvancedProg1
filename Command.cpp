@@ -24,6 +24,24 @@ int IfCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser)
 
   int index = currIndex + 3;
   while (tokensVec.at(index) != "}") {
+    string token = tokensVec.at(index);
+    if (parser->isExistsInCommandsMap(token)){
+      this->insert_to_inner_commands(*parser->getCommand(token));
+    } else if(parser->isExistsInSymbolTable(token)){
+      parser.
+
+    }
+//    if (tokensVec.at(index) == "var") {
+//      index++;
+//      string name = tokensVec.at(index);
+//      index++;
+//      float value = stod(tokensVec.at(index));
+//      index++;
+//      bool bindDirec = tokensVec.at(index) == "->" ? false : true;
+//      index++;
+//      string path = tokensVec.at(index);
+//      parser->insert_to_symbol_table(name, value, path, bindDirec);
+//    }
 
   }
 

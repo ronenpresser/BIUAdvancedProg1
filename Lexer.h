@@ -14,7 +14,7 @@ using namespace std;
 class Lexer {
 
  public:
-  vector<string> lexer(string filePath);
+  vector<string> *lexer(string filePath);
 
   void addVarTokensToVector(const string &line, std::vector<string> &tokensVector) const;
   void addMethodTokensToVector(const string &line, vector<string> &tokensVector) const;

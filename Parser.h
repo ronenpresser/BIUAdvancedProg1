@@ -7,28 +7,62 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "Command.h"
 
 using namespace std;
-class Command{
 
+class Symbol {
+ private:
+  float value;
+  string sim_path;
+ public:
+  void setValue(float value) {
+    this->value = value;
+  }
 
 };
 
-class Symbol{
+class SymbolTable {
+ private:
+  map<string, Symbol *> symbol_map;
+ public:
 
+  void setValue(string varName, float value) {
+    if (this->symbol_map.count(varName)) {
+      this->symbol_map[varName]->setValue(value);
+    }
+  }
+  void insert(string varName, Symbol *symbol) {
+    this->symbol_map.insert(make_pair(varName, symbol));
+  }
+  void clear() {
+    this->symbol_map.clear();
+  }
 
 };
+
 class Parser {
  private:
-  map<string, Command> commands_map;
-  map<string, Symbol> symbol_table;
+  map<string, Command *> commands_map;
+  SymbolTable symbol_table;
+  InterpretTool *interpret_tool;
+
  public:
-  void parse(vector<string> tokensVector);
-  void buildMaps(vector<string> tokensVector);
+  Parser() {
+    buildMaps();
+    interpret_tool = new InterpretTool();
+  }
+
+  void parse(vector<string> *tokensVector);
+  void buildMaps();
+  InterpretTool *getInterpreter() {
+    return this->interpret_tool;
+  }
+  ~Parser() {
+    commands_map.clear();
+    symbol_table.clear();
+    delete interpret_tool;
+  }
 };
-
-
-
-
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

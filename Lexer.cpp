@@ -9,7 +9,7 @@
 #include <regex>
 using namespace std;
 
-vector<string> Lexer::lexer(string filePath) {
+vector<string> *Lexer::lexer(string filePath) {
 
   string line;
   int linesNum = 0;
@@ -136,7 +136,7 @@ vector<string> Lexer::lexer(string filePath) {
 
   file.close();
 
-  return tokensVector;
+  return &tokensVector;
 
 }
 void Lexer::toWithoutSpaces(string &withoutSpaces) const {

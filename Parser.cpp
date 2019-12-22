@@ -77,7 +77,7 @@ bool SymbolTable::empty() {
   return this->symbol_map.empty();
 }
 Variable *SymbolTable::getVariable(string key) {
-  return this->symbol_map[key]
+  return this->symbol_map[key];
 }
 bool SymbolTable::count(string key) {
   return this->symbol_map.count(key);

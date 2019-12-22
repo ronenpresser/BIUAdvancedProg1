@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <chrono>
 #include "InterpretTool.h"
 
 using namespace std;
@@ -33,11 +34,14 @@ class Parser {
   map<string, Variable *> sim_var_table;
   map<int, string> index_sim_table;
   InterpretTool *interpret_tool;
+  bool shouldSleep;
+  string sleepMilliSeconds;
 
  public:
   Parser() {
     buildMaps();
     interpret_tool = new InterpretTool();
+    shouldSleep = false;
   }
 
   void parse(vector<string> *tokensVector);
@@ -45,12 +49,27 @@ class Parser {
   InterpretTool *getInterpreter();
   void insert_to_sim_var_table(string sim, Variable *var);
   void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
-  Command* getCommand(string key);
+  Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
   virtual ~Parser();
 
   //friend class Command;
   bool isExistsInSymbolTable(string key);
+  void sleep() {
+    shouldSleep = true;
+  }
+  void wake() {
+    shouldSleep = false;
+  }
+  bool isSleep() {
+    return shouldSleep;
+  }
+  void setSleepMilliSeconds(int seconds) {
+    this->sleepMilliSeconds = seconds;
+  }
+  string getSleepMilliSeconds() {
+    return sleepMilliSeconds;
+  }
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

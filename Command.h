@@ -32,7 +32,7 @@ class ConditionParser : public Command {
   bool isConditionTrue(string conditionString, Parser &pars);
   void insert_to_inner_commands(Command c);
   vector<Command> getInnerCommands();
-
+  void buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index);
 };
 
 class IfCommand : public ConditionParser {

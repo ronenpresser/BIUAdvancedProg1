@@ -12,6 +12,7 @@
 static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
 static int const STEPS_FOR_IF_OR_LOOP_COMMAND = 3;
+
 void sleep(Parser *parser) {
   while (!parser->isSleep()) {}
   mutex m;

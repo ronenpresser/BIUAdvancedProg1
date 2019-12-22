@@ -2,6 +2,7 @@
 // Created by amit on 14/12/2019.
 //
 
+#include <algorithm>
 #include "Parser.h"
 #include "Command.h"
 void Parser::parse(vector<string> *tokensVec) {
@@ -9,9 +10,16 @@ void Parser::parse(vector<string> *tokensVec) {
   int index = 0;
 
   while (index < tokensVec->size()) {
-    if (this->commands_map.count(tokensVec->at(index))) {
-      Command *c = this->commands_map[tokensVec->at(index)];
+    string lowerCaseLine = tokensVec->at(index);
+    transform(lowerCaseLine.begin(),
+              lowerCaseLine.end(),
+              lowerCaseLine.begin(),
+              ::tolower);
+    if (this->commands_map.count(lowerCaseLine)) {
+      Command *c = this->commands_map[lowerCaseLine];
       index += c->execute(*tokensVec, index, this);
+    } else if (this->symbol_table.count(tokensVec->at(index))) {
+
     }
   }
 }
@@ -102,6 +110,21 @@ bool Parser::isExistsInCommandsMap(string key) {
 
 bool Parser::isExistsInSymbolTable(string key) {
   return symbol_table.count(key);
+}
+void Parser::sleep() {
+  shouldSleep = true;
+}
+void Parser::wake() {
+  shouldSleep = false;
+}
+bool Parser::isSleep() {
+  return shouldSleep;
+}
+void Parser::setSleepMilliSeconds(int seconds) {
+  this->sleepMilliSeconds = seconds;
+}
+string Parser::getSleepMilliSeconds() {
+  return sleepMilliSeconds;
 }
 Parser::~Parser() {
   if (!commands_map.empty()) {

@@ -21,7 +21,6 @@ class SymbolTable {
   void insert(string varName, float val, string path, bool bindingDirec);
   void clear();
   bool empty();
-
   bool count(string key);
   Variable *getVariable(string key);
 };
@@ -51,25 +50,17 @@ class Parser {
   void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
   Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
+  bool isExistsInSymbolTable(string key);
+  void sleep();
+  void wake();
+  bool isSleep();
+  void setSleepMilliSeconds(int milliSeconds);
+  string getSleepMilliSeconds();
+
   virtual ~Parser();
 
   //friend class Command;
-  bool isExistsInSymbolTable(string key);
-  void sleep() {
-    shouldSleep = true;
-  }
-  void wake() {
-    shouldSleep = false;
-  }
-  bool isSleep() {
-    return shouldSleep;
-  }
-  void setSleepMilliSeconds(int seconds) {
-    this->sleepMilliSeconds = seconds;
-  }
-  string getSleepMilliSeconds() {
-    return sleepMilliSeconds;
-  }
+
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

@@ -13,21 +13,21 @@ static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
 static int const STEPS_FOR_IF_OR_LOOP_COMMAND = 3;
 
-void sleep(Parser *parser) {
-  while (!parser->isSleep()) {}
+void sleep(int sleepParam) {
+  //while (!parser->isSleep()) {}
   mutex m;
   m.lock();
-  int milliSeconds = stoi(parser->getSleepMilliSeconds());
-  this_thread::sleep_for(chrono::milliseconds(milliSeconds));
-  parser->wake();
+  //int milliSeconds = stoi(parser->getSleepMilliSeconds());
+  this_thread::sleep_for(chrono::milliseconds(sleepParam));
+  //parser->wake();
   m.unlock();
 }
 int SleepCommand::execute(vector<string> &tokensVector, int currentIndex, Parser *parser) {
 
   int sleepParameter(stoi(tokensVector.at(currentIndex + 1)));
-  parser->setSleepMilliSeconds(sleepParameter);
-  parser->sleep();
-  thread sleepThread(sleep, parser);
+  //parser->setSleepMilliSeconds(sleepParameter);
+  //parser->sleep();
+  thread sleepThread(sleep, sleepParameter);
   sleepThread.join();
 
   return STEPS_FOR_ONE_PARAMETER_COMMAND;

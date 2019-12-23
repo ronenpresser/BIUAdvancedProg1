@@ -19,7 +19,7 @@ void Parser::parse(vector<string> *tokensVec) {
       Command *c = this->commands_map[lowerCaseLine];
       index += c->execute(*tokensVec, index, this);
     } else if (this->symbol_table.count(tokensVec->at(index))) {
-
+      //TODO: use a Command for assignment of a var after it has been allready added to the symbol table.
     }
   }
 }

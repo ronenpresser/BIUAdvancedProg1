@@ -69,7 +69,7 @@ void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *par
     if (parser->isExistsInCommandsMap(token)) {
       this->insert_to_inner_commands(*parser->getCommand(token));
     } else if (parser->isExistsInSymbolTable(token)) {
-
+      //TODO: add a Command for assignment of the var.
     }
 //    if (tokensVec.at(index) == "var") {
 //      index++;

@@ -8,6 +8,7 @@
 #include <list>
 #include <thread>
 #include <mutex>
+#include <algorithm>
 
 static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
@@ -66,7 +67,12 @@ int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parse
 void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index) {
   while (tokensVec.at(index) != "}") {
     string token = tokensVec.at(index);
-    if (parser->isExistsInCommandsMap(token)) {
+    string lowerCaseLine = token;
+    transform(lowerCaseLine.begin(),
+              lowerCaseLine.end(),
+              lowerCaseLine.begin(),
+              ::tolower);
+    if (parser->isExistsInCommandsMap(lowerCaseLine)) {
       this->insert_to_inner_commands(*parser->getCommand(token));
     } else if (parser->isExistsInSymbolTable(token)) {
       //TODO: add a Command for assignment of the var.

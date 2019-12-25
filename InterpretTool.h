@@ -52,13 +52,21 @@ class Variable : public Expression {
     return this->bindingDirection;
   }
 
+  string getSimPath() {
+    return simPath;
+  }
+
   virtual double calculate() {
     return value;
   }
   Variable(string nameString, double val, string path, bool bindingDir) : value(val),
                                                                           name(nameString),
-                                                                          simPath(path),
-                                                                          bindingDirection(bindingDir) {}
+                                                                          bindingDirection(bindingDir) {
+    if (path.at(0) == '/') {
+      this->simPath = path.substr(1, path.length() - 1);
+    } else { simPath = path; }
+
+  }
 
   Variable(string nameString, double val, string path) : value(val), name(nameString), simPath(path) {}
 

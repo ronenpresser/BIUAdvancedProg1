@@ -19,65 +19,66 @@ void Parser::parse(vector<string> *tokensVec) {
       Command *c = this->commands_map[lowerCaseLine];
       index += c->execute(*tokensVec, index, this);
     } else if (this->symbol_table.count(tokensVec->at(index))) {
-      //TODO: use a Command for assignment of a var after it has been already added to the symbol table.
+      Command *c = this->commands_map["="];
+      index += c->execute(*tokensVec, index, this);
     }
   }
 }
 
 void Parser::buildMaps() {
-
+  this->commands_map.insert(make_pair("opendataserver", new OpenServerCommand()));
+  this->commands_map.insert(make_pair("connectcontrolclient", new ConnectCommand()));
   this->commands_map.insert(make_pair("sleep", new SleepCommand()));
+  this->commands_map.insert(make_pair("print", new PrintCommand()));
+  this->commands_map.insert(make_pair("var", new DefineVarCommand()));
+  this->commands_map.insert(make_pair("=", new VarAssignmentCommand()));
   this->commands_map.insert(make_pair("if", new IfCommand()));
   this->commands_map.insert(make_pair("while", new LoopCommand()));
 
-  this->index_sim_table.insert(make_pair(0, "instrumentation/airspeed-indicator/indicated-speed-kt"));
-  this->index_sim_table.insert(make_pair(1, "sim/time/warp"));
-  this->index_sim_table.insert(make_pair(2, "controls/switches/magnetos"));
-  this->index_sim_table.insert(make_pair(3, "instrumentation/heading-indicator/offset-deg"));
-  this->index_sim_table.insert(make_pair(4, "instrumentation/altimeter/indicated-altitude-ft"));
-  this->index_sim_table.insert(make_pair(5, "instrumentation/altimeter/pressure-alt-ft"));
-  this->index_sim_table.insert(make_pair(6, "instrumentation/attitude-indicator/indicated-pitch-deg"));
-  this->index_sim_table.insert(make_pair(7, "instrumentation/attitude-indicator/indicated-roll-deg"));
-  this->index_sim_table.insert(make_pair(8, "instrumentation/attitude-indicator/internal-pitch-deg"));
-  this->index_sim_table.insert(make_pair(9, "instrumentation/attitude-indicator/internal-roll-deg"));
-  this->index_sim_table.insert(make_pair(10, "instrumentation/encoder/indicated-altitude-ft"));
-  this->index_sim_table.insert(make_pair(11, "instrumentation/encoder/pressure-alt-ft"));
-  this->index_sim_table.insert(make_pair(12, "instrumentation/gps/indicated-altitude-ft"));
-  this->index_sim_table.insert(make_pair(13, "instrumentation/gps/indicated-ground-speed-kt"));
-  this->index_sim_table.insert(make_pair(14, "instrumentation/gps/indicated-vertical-speed"));
-  this->index_sim_table.insert(make_pair(15, "instrumentation/heading-indicator/indicated-heading-deg"));
-  this->index_sim_table.insert(make_pair(16, "instrumentation/magnetic-compass/indicated-heading-deg"));
-  this->index_sim_table.insert(make_pair(17, "instrumentation/slip-skid-ball/indicated-slip-skid"));
-  this->index_sim_table.insert(make_pair(18, "instrumentation/turn-indicator/indicated-turn-rate"));
-  this->index_sim_table.insert(make_pair(19, "instrumentation/vertical-speed-indicator/indicated-speed-fpm"));
-  this->index_sim_table.insert(make_pair(20, "controls/flight/aileron"));
-  this->index_sim_table.insert(make_pair(21, "controls/flight/elevator"));
-  this->index_sim_table.insert(make_pair(22, "controls/flight/rudder"));
-  this->index_sim_table.insert(make_pair(23, "controls/flight/flaps"));
-  this->index_sim_table.insert(make_pair(24, "controls/engines/engine/throttle"));
-  this->index_sim_table.insert(make_pair(25, "controls/engines/current-engine/throttle"));
-  this->index_sim_table.insert(make_pair(26, "controls/switches/master-avionics"));
-  this->index_sim_table.insert(make_pair(27, "controls/switches/starter"));
-  this->index_sim_table.insert(make_pair(28, "engines/active-engine/auto-start"));
-  this->index_sim_table.insert(make_pair(29, "controls/flight/speedbrake"));
-  this->index_sim_table.insert(make_pair(30, "sim/model/c172p/brake-parking"));
-  this->index_sim_table.insert(make_pair(31, "controls/engines/engine/primer"));
-  this->index_sim_table.insert(make_pair(32, "controls/engines/current-engine/mixture"));
-  this->index_sim_table.insert(make_pair(33, "controls/switches/master-bat"));
-  this->index_sim_table.insert(make_pair(34, "controls/switches/master-alt"));
-  this->index_sim_table.insert(make_pair(35, "engines/engine/rpm"));
+  this->indexToSimPathMap.insert(make_pair(0, "instrumentation/airspeed-indicator/indicated-speed-kt"));
+  this->indexToSimPathMap.insert(make_pair(1, "sim/time/warp"));
+  this->indexToSimPathMap.insert(make_pair(2, "controls/switches/magnetos"));
+  this->indexToSimPathMap.insert(make_pair(3, "instrumentation/heading-indicator/offset-deg"));
+  this->indexToSimPathMap.insert(make_pair(4, "instrumentation/altimeter/indicated-altitude-ft"));
+  this->indexToSimPathMap.insert(make_pair(5, "instrumentation/altimeter/pressure-alt-ft"));
+  this->indexToSimPathMap.insert(make_pair(6, "instrumentation/attitude-indicator/indicated-pitch-deg"));
+  this->indexToSimPathMap.insert(make_pair(7, "instrumentation/attitude-indicator/indicated-roll-deg"));
+  this->indexToSimPathMap.insert(make_pair(8, "instrumentation/attitude-indicator/internal-pitch-deg"));
+  this->indexToSimPathMap.insert(make_pair(9, "instrumentation/attitude-indicator/internal-roll-deg"));
+  this->indexToSimPathMap.insert(make_pair(10, "instrumentation/encoder/indicated-altitude-ft"));
+  this->indexToSimPathMap.insert(make_pair(11, "instrumentation/encoder/pressure-alt-ft"));
+  this->indexToSimPathMap.insert(make_pair(12, "instrumentation/gps/indicated-altitude-ft"));
+  this->indexToSimPathMap.insert(make_pair(13, "instrumentation/gps/indicated-ground-speed-kt"));
+  this->indexToSimPathMap.insert(make_pair(14, "instrumentation/gps/indicated-vertical-speed"));
+  this->indexToSimPathMap.insert(make_pair(15, "instrumentation/heading-indicator/indicated-heading-deg"));
+  this->indexToSimPathMap.insert(make_pair(16, "instrumentation/magnetic-compass/indicated-heading-deg"));
+  this->indexToSimPathMap.insert(make_pair(17, "instrumentation/slip-skid-ball/indicated-slip-skid"));
+  this->indexToSimPathMap.insert(make_pair(18, "instrumentation/turn-indicator/indicated-turn-rate"));
+  this->indexToSimPathMap.insert(make_pair(19, "instrumentation/vertical-speed-indicator/indicated-speed-fpm"));
+  this->indexToSimPathMap.insert(make_pair(20, "controls/flight/aileron"));
+  this->indexToSimPathMap.insert(make_pair(21, "controls/flight/elevator"));
+  this->indexToSimPathMap.insert(make_pair(22, "controls/flight/rudder"));
+  this->indexToSimPathMap.insert(make_pair(23, "controls/flight/flaps"));
+  this->indexToSimPathMap.insert(make_pair(24, "controls/engines/engine/throttle"));
+  this->indexToSimPathMap.insert(make_pair(25, "controls/engines/current-engine/throttle"));
+  this->indexToSimPathMap.insert(make_pair(26, "controls/switches/master-avionics"));
+  this->indexToSimPathMap.insert(make_pair(27, "controls/switches/starter"));
+  this->indexToSimPathMap.insert(make_pair(28, "engines/active-engine/auto-start"));
+  this->indexToSimPathMap.insert(make_pair(29, "controls/flight/speedbrake"));
+  this->indexToSimPathMap.insert(make_pair(30, "sim/model/c172p/brake-parking"));
+  this->indexToSimPathMap.insert(make_pair(31, "controls/engines/engine/primer"));
+  this->indexToSimPathMap.insert(make_pair(32, "controls/engines/current-engine/mixture"));
+  this->indexToSimPathMap.insert(make_pair(33, "controls/switches/master-bat"));
+  this->indexToSimPathMap.insert(make_pair(34, "controls/switches/master-alt"));
+  this->indexToSimPathMap.insert(make_pair(35, "engines/engine/rpm"));
 
 }
 
 void SymbolTable::setValue(string varName, float value) {
-  if (this->symbol_map.count(varName)) {
-    this->symbol_map[varName]->setValue(value);
-  }
+  this->symbol_map[varName]->setValue(value);
 }
-void SymbolTable::insert(string varName, float val, string path, bool bindingDirec) {
-  Variable *var = new Variable(varName, val, path, bindingDirec);
-  this->symbol_map.insert(make_pair(varName, var));
-  delete var;
+void SymbolTable::insert(Variable *var) {
+  this->symbol_map.insert(make_pair(var->getName(), var));
 }
 void SymbolTable::clear() {
   this->symbol_map.clear();
@@ -95,11 +96,20 @@ InterpretTool *Parser::getInterpreter() {
   return interpret_tool;
 }
 
-void Parser::insert_to_sim_var_table(string sim, Variable *var) {
-  this->sim_var_table.insert(make_pair(sim, var));
-}
 void Parser::insert_to_symbol_table(string varName, float val, string path, bool bindingDirec) {
-  this->symbol_table.insert(varName, val, path, bindingDirec);
+  Variable *var = new Variable(varName, val, path, bindingDirec);
+  this->symbol_table.insert(var);
+  this->simPathToVarMap.insert(make_pair(var->getSimPath(), var));
+  this->interpret_tool->setVariables(varName + "=" + to_string(val));
+  //delete var;
+}
+
+void Parser::updateValue(string varName, float newVal) {
+  if (isExistsInSymbolTable(varName)) {
+    this->symbol_table.setValue(varName, newVal);
+    this->interpret_tool->setVariables(varName + "=" + to_string(newVal));
+  }
+
 }
 
 Command *Parser::getCommand(string key) {
@@ -134,11 +144,11 @@ Parser::~Parser() {
   if (!symbol_table.empty()) {
     symbol_table.clear();
   }
-  if (!sim_var_table.empty()) {
-    sim_var_table.clear();
+  if (!simPathToVarMap.empty()) {
+    simPathToVarMap.clear();
   }
-  if (!index_sim_table.empty()) {
-    index_sim_table.clear();
+  if (!indexToSimPathMap.empty()) {
+    indexToSimPathMap.clear();
   }
   if (interpret_tool != nullptr)
     delete interpret_tool;

@@ -18,7 +18,7 @@ class SymbolTable {
  public:
 
   void setValue(string varName, float value);
-  void insert(string varName, float val, string path, bool bindingDirec);
+  void insert(Variable *var);
   void clear();
   bool empty();
   bool count(string key);
@@ -30,8 +30,8 @@ class Parser {
  private:
   map<string, Command *> commands_map;
   SymbolTable symbol_table;
-  map<string, Variable *> sim_var_table;
-  map<int, string> index_sim_table;
+  map<string, Variable *> simPathToVarMap;
+  map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
   bool shouldSleep;
   string sleepMilliSeconds;
@@ -46,7 +46,6 @@ class Parser {
   void parse(vector<string> *tokensVector);
   void buildMaps();
   InterpretTool *getInterpreter();
-  void insert_to_sim_var_table(string sim, Variable *var);
   void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
   Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
@@ -61,6 +60,7 @@ class Parser {
 
   //friend class Command;
 
+  void updateValue(string varName, float newVal);
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

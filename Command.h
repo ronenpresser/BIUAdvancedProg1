@@ -15,49 +15,54 @@ using namespace std;
 class Parser;
 
 class Command {
-public:
-    virtual int execute(vector <string> &tokensVector, int currentIndex, Parser *pars) {}
+ public:
+  virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
 };
 
 class SleepCommand : public Command {
-public:
-    int execute(vector <string> &tokensVector, int currentIndex, Parser *pars);
+ public:
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };
 
 class ConditionParser : public Command {
-private:
-    vector <Command> inner_commands;
-public:
-    virtual int execute(vector <string> &tokensVector, int currentIndex, Parser *pars) {}
+ private:
+  vector<Command> inner_commands;
+ public:
+  virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
 
-    bool isConditionTrue(string conditionString, Parser &pars);
+  bool isConditionTrue(string conditionString, Parser &pars);
 
-    void insert_to_inner_commands(Command c);
+  void insert_to_inner_commands(Command c);
 
-    vector <Command> getInnerCommands();
+  vector<Command> getInnerCommands();
 
-    void buildCommandsVector(vector <string> &tokensVec, Parser *parser, int index);
+  void buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index);
 };
 
 class IfCommand : public ConditionParser {
-public:
-    int execute(vector <string> &tokensVector, int currentIndex, Parser *pars);
+ public:
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 
 };
 
 class LoopCommand : public ConditionParser {
-public:
-    int execute(vector <string> &tokensVector, int currentIndex, Parser *pars);
+ public:
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };
 
-class OpenServerCommand : Command {
-public:
-    int execute(vector <string> &tokensVec, int currIndex, Parser *parser);
+class VarAssignmentCommand : public Command {
+ public:
+  int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };
 
-class ConnectCommand : Command {
-public:
-    int execute(vector <string> &tokensVec, int currIndex, Parser *parser);
+class OpenServerCommand : public Command {
+ public:
+  int execute(vector<string> &tokensVec, int currIndex, Parser *parser);
+};
+
+class ConnectCommand : public Command {
+ public:
+  int execute(vector<string> &tokensVec, int currIndex, Parser *parser);
 
 };
 

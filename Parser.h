@@ -50,6 +50,7 @@ class Parser {
   Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
   bool isExistsInSymbolTable(string key);
+  bool isBindingDirectionLeft(string varName);
   void sleep();
   void wake();
   bool isSleep();

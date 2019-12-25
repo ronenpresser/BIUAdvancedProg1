@@ -10,6 +10,7 @@
 #include <mutex>
 #include <algorithm>
 #include <netinet/in.h>
+#include <iostream>
 
 static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
@@ -77,7 +78,7 @@ int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port =
-      htons((int)(parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2))->calculate()));
+      htons((int) (parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2))->calculate()));
   if (bind(socketfd), (sockaddr *) &address, sizeof(address))==-1) {
     std::cerr << "Cannot bind socket to ip" << std::endl;
 
@@ -102,7 +103,7 @@ int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
 
 int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
   string ip = tokensVec.at(currIndex + 1);
-  int port = hton(stoi(parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2)).calculate()));
+  int port = parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2))->calculate();
   socketfd = socket(AF_INET, SOCK_STREAM, 0);
   if (socketfd == -1) {
     std::cerr << "Cannot create a socket" << std::endl;
@@ -129,8 +130,16 @@ int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pa
 
 int VarAssignmentCommand::execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {
 
+  float val = pars->getInterpreter()->interpretMathExpression(tokensVector.at(currentIndex + 1))->calculate();
+  string varName = tokensVector.at(currentIndex);
+  pars->updateValue(varName, val);
+  if (pars->isBindingDirectionLeft(varName)) {  //TODO complete it by the direction
 
+  } else {
 
+  }
+
+  return STEPS_FOR_ONE_PARAMETER_COMMAND;
 
 }
 

@@ -122,6 +122,11 @@ bool Parser::isExistsInCommandsMap(string key) {
 bool Parser::isExistsInSymbolTable(string key) {
   return symbol_table.count(key);
 }
+
+bool Parser::isBindingDirectionLeft(string varName) {
+  return this->symbol_table.getVariable(varName)->getBindingDirection();
+
+}
 //void Parser::sleep() {
 //  shouldSleep = true;
 //}

@@ -17,6 +17,7 @@ class Parser;
 class Command {
  public:
   virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
+  const vector<string> splitByChar(string wholeString, char delimter);
 };
 
 class SleepCommand : public Command {

@@ -37,7 +37,7 @@ class Variable : public Expression {
  private:
   double value;
   string name;
-  string simPath;
+  string simulatorPath;
   bool bindingDirection; // false for right, true for left.
  public:
   string getName() {
@@ -52,8 +52,8 @@ class Variable : public Expression {
     return this->bindingDirection;
   }
 
-  string getSimPath() {
-    return simPath;
+  string getSimulatorPath() {
+    return simulatorPath;
   }
 
   virtual double calculate() {
@@ -63,12 +63,12 @@ class Variable : public Expression {
                                                                           name(nameString),
                                                                           bindingDirection(bindingDir) {
     if (path.at(0) == '/') {
-      this->simPath = path.substr(1, path.length() - 1);
-    } else { simPath = path; }
+      this->simulatorPath = path.substr(1, path.length() - 1);
+    } else { simulatorPath = path; }
 
   }
 
-  Variable(string nameString, double val, string path) : value(val), name(nameString), simPath(path) {}
+  Variable(string nameString, double val, string path) : value(val), name(nameString), simulatorPath(path) {}
 
   Variable(string nameString, double val) : value(val), name(nameString) {}
 

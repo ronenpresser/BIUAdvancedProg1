@@ -99,7 +99,7 @@ InterpretTool *Parser::getInterpreter() {
 void Parser::insert_to_symbol_table(string varName, float val, string path, bool bindingDirec) {
   Variable *var = new Variable(varName, val, path, bindingDirec);
   this->symbol_table.insert(var);
-  this->simPathToVarMap.insert(make_pair(var->getSimPath(), var));
+  this->simPathToVarMap.insert(make_pair(var->getSimulatorPath(), var));
   this->interpret_tool->setVariables(varName + "=" + to_string(val));
   //delete var;
 }

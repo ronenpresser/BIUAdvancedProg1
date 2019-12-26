@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <netinet/in.h>
 #include <iostream>
+#include <sstream>
 
 static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
@@ -157,6 +158,18 @@ void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *par
       this->insert_to_inner_commands(*parser->getCommand("="));
     }
   }
+}
+
+const vector<string> Command::splitByChar(string wholeString, char delimter) {
+
+  vector<string> tokens;
+  string token;
+  istringstream tokenStream(wholeString);
+  while (getline(tokenStream, token, delimter)) {
+    tokens.push_back(token);
+  }
+
+  return tokens;
 }
 
 bool ConditionParser::isConditionTrue(string conditionString, Parser &pars) {

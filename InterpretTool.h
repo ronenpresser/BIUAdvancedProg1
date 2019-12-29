@@ -44,10 +44,6 @@ class Variable : public Expression {
     return this->name;
   }
 
-  string getSimPath() {
-      return this->simPath;
-  }
-
   void setValue(double val) {
     this->value = val;
   }
@@ -59,7 +55,9 @@ class Variable : public Expression {
   string getSimulatorPath() {
     return simulatorPath;
   }
-
+float getValue() {
+      return this->value;
+  }
   virtual double calculate() {
     return value;
   }

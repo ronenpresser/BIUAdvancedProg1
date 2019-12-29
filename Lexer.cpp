@@ -211,6 +211,9 @@ void Lexer::addVarTokensToVector(const string &line, vector<string> &tokensVecto
       string inParens = token.substr(
           token.find_first_of("\""),
           token.find_first_of(')') - token.find_first_of("\""));
+      if(inParens.at(1) == '/'){
+          inParens = "\"" + inParens.substr(2, inParens.length() - 3);
+      }
       tokensVector.push_back(inParens);
     } else {
       tokensVector.push_back(token);

@@ -9,12 +9,17 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
+#include <cstring>
+#include <sstream>
 
 static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
 static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
 static int const STEPS_FOR_IF_OR_LOOP_COMMAND = 3;
 
-void sleep(int sleepParam) {
+
+int sockID;
+
+void sleepFunc(int sleepParam) {
     //while (!parser->isSleep()) {}
     mutex m;
     m.lock();
@@ -24,26 +29,26 @@ void sleep(int sleepParam) {
     m.unlock();
 }
 
-int SleepCommand::execute(vector <string> &tokensVector, int currentIndex, Parser *parser) {
+int SleepCommand::execute(vector<string> &tokensVector, int currentIndex, Parser *parser) {
 
     int sleepParameter(stoi(tokensVector.at(currentIndex + 1)));
     //parser->setSleepMilliSeconds(sleepParameter);
     //parser->sleep();
-    thread sleepThread(sleep, sleepParameter);
+    thread sleepThread(sleepFunc, sleepParameter);
     sleepThread.join();
 
     return STEPS_FOR_ONE_PARAMETER_COMMAND;
 
 }
 
-int IfCommand::execute(vector <string> &tokensVec, int currIndex, Parser *parser) {
+int IfCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
     int steps = STEPS_FOR_IF_OR_LOOP_COMMAND;
 
     int index = currIndex + 3;
     buildCommandsVector(tokensVec, parser, index);
 
     if (isConditionTrue(tokensVec.at(currIndex + 1), *parser)) {
-        vector <Command> commands = getInnerCommands();
+        vector<Command> commands = getInnerCommands();
         for (Command c : commands) {
             steps += c.execute(tokensVec, currIndex, parser);
         }
@@ -52,12 +57,12 @@ int IfCommand::execute(vector <string> &tokensVec, int currIndex, Parser *parser
     return steps + 1;
 }
 
-int LoopCommand::execute(vector <string> &tokensVec, int currIndex, Parser *parser) {
+int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
     int steps = STEPS_FOR_IF_OR_LOOP_COMMAND;
     int index = currIndex + 3;
     buildCommandsVector(tokensVec, parser, index);
     while (isConditionTrue(tokensVec.at(currIndex + 1), *parser)) {
-        vector <Command> commands = getInnerCommands();
+        vector<Command> commands = getInnerCommands();
         for (Command c : commands) {
             steps += c.execute(tokensVec, currIndex, parser);
         }
@@ -67,9 +72,9 @@ int LoopCommand::execute(vector <string> &tokensVec, int currIndex, Parser *pars
 }
 
 int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-    int client_socket,sockserver,sockclient;
+    int client_socket, sockserver, sockclient;
     sockserver = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockserver== -1) {
+    if (sockserver == -1) {
         std::cerr << "Cannot create a socket" << std::endl;
     }
     sockaddr_in address1;
@@ -77,7 +82,7 @@ int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
     address1.sin_addr.s_addr = INADDR_ANY;
     address1.sin_port =
             htons((int) (parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2))->calculate()));
-    if (bind(sockserver, (sockaddr *) &address1, sizeof(address1))==-1) {
+    if (bind(sockserver, (sockaddr *) &address1, sizeof(address1)) == -1) {
         std::cerr << "Cannot bind socket to ip" << std::endl;
 
     }
@@ -90,55 +95,82 @@ int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
         std::cerr << "Error due to accept command" << std::endl;
     }
 
-    sockclient = socket(AF_INET,SOCK_STREAM,0);
+    sockclient = socket(AF_INET, SOCK_STREAM, 0);
     // char* buffer="--generic=socket,out,10,127.0.0.1," + tokensVec.at(currIndex +1) + ",tcp,generic_small";
     // int vals= send(client_socket,(char*)buffer,strlen(buffer),0);
     //buffer is a member of OpenServerCommand Class. we also need to do getBuffer() method.
-    int vl = read(client_socket, parser->getBuffer(), sizeof(getBuffer()));
-    for(int i=0;i<strlen(getBuffer());i++) {//i=i+2?
-        string str = parser->getIndexToSimPathMap[i];
-        Variable v = parser->getSimPathToVarMap[str];
-        parser->getSymbolTable.setValue(v.getString(), getBuffer[i]);
+    char *buffer;
+    int vl = read(client_socket, buffer, sizeof(buffer));
+    vector<string> values = splitByChar(buffer, ',');
+    for (unsigned i = 0; i < values.size(); i++) {
+        string path = parser->getSimulatorPathByIndex(i);
+        float value = stof(values.at(i));
+
+        parser->insert_to_simulator_values(path, value);
+
     }
     return 2;
 }
+
 int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-    int sock;
     string ip = tokensVec.at(currIndex + 1);
     int port = parser->getInterpreter()->interpretMathExpression(tokensVec.at(currIndex + 2))->calculate();
-    sock= socket(AF_INET, SOCK_STREAM, 0);
-    if (sock== -1) {
+    sockID = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockID == -1) {
         std::cerr << "Cannot create a socket" << std::endl;
     }
     sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = stoi(ip);
     address.sin_port = htons(port);
-    if (connect(sock, (struct sockaddr *) &address, sizeof(address) == -1)) {
+    if (connect(sockID, (struct sockaddr *) &address, sizeof(address) == -1)) {
         std::cerr << "Cannot establish connection" << std::endl;
     }
     return 3;
 }
-int DefineVarCommand::execute(vector <string> vector, int currIndex, Parser *parser) {
-    if (tokensVec.at(currIndex + 2) == '->') {
-        char *buffer = "set" + vector.at(currentIndex + 2) +
-                       to_string(parse.getVariable(vector.at(currentIndex + 1).getValue());
-        send(socketfd, (char *) buffer, strlen(buffer), 0);
+
+int DefineVarCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
+
+    float value = 0;
+    bool bindingDirection;
+    string simulatorPath = tokensVec.at(currIndex + 3);
+
+    if (tokensVec.at(currIndex + 2) == "->") {
+//        char* buffer = "set" + tokensVec.at(currIndex + 3) +
+//                       to_string(parser->getValueOfSymbol(tokensVec.at(currIndex + 1)));
+//        send(socketfd, (char *) buffer, strlen(buffer), 0);
+        bindingDirection = false;
+
     }
-    if (tokensVec.at(currIndex + 2) == '<-') {
-        string var = parser.getSimPathToVarMap.get(vector.at(currIndex + 4);
-        float val = var.getValue();
-        parser.symbol_table.setValue(val);
+    if (tokensVec.at(currIndex + 2) == "<-") {
+        bindingDirection = true;
+        value = parser->getValueBySimulatorPath(simulatorPath);
     }
+    string name = tokensVec.at(currIndex + 1);
+    parser->insert_to_symbol_table(name, value, simulatorPath, bindingDirection);
     return 4;
 }
 
 int PrintCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-    std::cout<<tokensVec.at(currIndex +1)<<std::endl;
+    if (parser->isExistsInSymbolTable(tokensVec.at(currIndex + 1))) {
+        std::cout << parser->getValueOfSymbol(tokensVec.at(currIndex + 1)) << std::endl;
+    } else if (tokensVec.at(currIndex + 1).find("\"") != string::npos) {
+        cout << tokensVec.at(currIndex + 1) << endl;
+    } else {
+        string withoutSpaces = tokensVec.at(currIndex + 1);
+        withoutSpaces.erase(remove(withoutSpaces.begin(),
+                                   withoutSpaces.end(), ' '), withoutSpaces.end());
+        try {
+            float value = parser->getInterpreter()->interpretMathExpression(withoutSpaces)->calculate();
+            cout << value << endl;
+        } catch (const char *e) {
+            throw e;
+        }
+    }
     return 2;
 }
 
-void ConditionParser::buildCommandsVector(vector <string> &tokensVec, Parser *parser, int index) {
+void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index) {
     while (tokensVec.at(index) != "}") {
         string token = tokensVec.at(index);
         string lowerCaseLine = token;
@@ -149,7 +181,7 @@ void ConditionParser::buildCommandsVector(vector <string> &tokensVec, Parser *pa
         if (parser->isExistsInCommandsMap(lowerCaseLine)) {
             this->insert_to_inner_commands(*parser->getCommand(token));
         } else if (parser->isExistsInSymbolTable(token)) {
-            //TODO: add a Command for assignment of the var.
+            this->insert_to_inner_commands(*parser->getCommand("="));
         }
 //    if (tokensVec.at(index) == "var") {
 //      index++;
@@ -166,6 +198,46 @@ void ConditionParser::buildCommandsVector(vector <string> &tokensVec, Parser *pa
     }
 }
 
+int VarAssignmentCommand::execute(vector<string> & tokensVector, int currentIndex, class Parser * pars) {
+
+    if(!pars->isBindingDirectionLeft(tokensVector.at(currentIndex))){
+        string simPath = pars->getSimulatorPathByVarName(tokensVector.at(currentIndex));
+        string message="set" + simPath + tokensVector.at(currentIndex+2) + "\r\n";
+        ssize_t return_val;
+        return_val = write(sockID, message.c_str(), message.length());
+
+    }
+
+    pars->updateValue(tokensVector.at(currentIndex), stof(tokensVector.at(currentIndex + 2)));
+
+    return 3;
+
+}
+
+const vector<string> Command::splitByChar(string wholeString, char delimter) {
+
+    vector<string> tokens;
+    string token;
+    istringstream tokenStream(wholeString);
+    while (getline(tokenStream, token, '\n')) {
+        //tokens.push_back(token);
+        string lineWithoutNewLine = token;
+        istringstream tokenStream1(lineWithoutNewLine);
+        string token1;
+        while (getline(tokenStream1, token1, '\r')) {
+            string lineWithoutSlashR = token;
+            istringstream tokenStream2(lineWithoutSlashR);
+            string token2;
+            while (getline(tokenStream2, token2, ',')) {
+                tokens.push_back(token2);
+            }
+        }
+    }
+
+
+    return tokens;
+}
+
 bool ConditionParser::isConditionTrue(string conditionString, Parser &pars) {
     auto par = pars;
     return par.getInterpreter()->interpretBoolExpression(conditionString)->calculate() == 1 ? true : false;
@@ -175,6 +247,6 @@ void ConditionParser::insert_to_inner_commands(Command c) {
     this->inner_commands.push_back(c);
 }
 
-vector <Command> ConditionParser::getInnerCommands() {
+vector<Command> ConditionParser::getInnerCommands() {
     return inner_commands;
 }

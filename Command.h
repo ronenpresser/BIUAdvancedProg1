@@ -22,10 +22,10 @@ class Command {
 public:
     virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) {}
 
-    const vector<string> splitByChar(string wholeString, char delimter);
+    const vector<string> splitByChar(string wholeString, char delimeter);
 };
 
-class DefineVarCommand : public Command {
+class DefineVarCommand : public Command{
 public:
     int execute(vector<string> &tokensVector, int currentIndex, Parser *pars);
 };

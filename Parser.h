@@ -33,14 +33,13 @@ class Parser {
   map<string, Variable *> simPathToVarMap;
   map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
-  bool shouldSleep;
-  string sleepMilliSeconds;
+  map<string, float> simulatorValues;
+
 
  public:
   Parser() {
     buildMaps();
     interpret_tool = new InterpretTool();
-    shouldSleep = false;
   }
 
   void parse(vector<string> *tokensVector);
@@ -51,11 +50,22 @@ class Parser {
   bool isExistsInCommandsMap(string key);
   bool isExistsInSymbolTable(string key);
   bool isBindingDirectionLeft(string varName);
-  void sleep();
-  void wake();
-  bool isSleep();
-  void setSleepMilliSeconds(int milliSeconds);
-  string getSleepMilliSeconds();
+  float getValueOfSymbol(string varName) {
+      return this->symbol_table.getVariable(varName)->getValue();
+  }
+  string getSimulatorPathByIndex(int index){
+      return this->indexToSimPathMap[index];
+  }
+  void insert_to_simulator_values(string path, float value){
+      this->simulatorValues.insert(make_pair(path,value));
+  }
+  float getValueBySimulatorPath(string path){
+      return this->simulatorValues[path];
+  }
+  string getSimulatorPathByVarName(string varName) {
+
+      return this->symbol_table.getVariable(varName)->getSimulatorPath();
+  }
 
   virtual ~Parser();
 

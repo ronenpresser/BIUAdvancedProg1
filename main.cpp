@@ -4,7 +4,7 @@
 #include "Parser.h"
 #include <fstream>
 #include <thread>
-void parse(Parser *parser, string path) {
+void parse1(Parser *parser, string path) {
   Lexer *lexer = new Lexer();
   parser->parse(lexer->lexer(path));
 
@@ -13,15 +13,18 @@ void parse(Parser *parser, string path) {
 
 int main(int argc, char const *argv[]) {
 
-  Parser *parser = new Parser();
-  thread parserThread(parse, parser, "../fly.txt"); // argv[1]
+  //Parser *parser = new Parser();
+
+    vector<string> *tokens = (new Lexer())->lexer("../fly.txt");
+    //parser->parse(lexer->lexer("../fly.txt"));
+  //thread parserThread(parse, parser, "../fly.txt"); // argv[1]
   //Lexer *lexer = new Lexer();
   //vector<string> *tokensVec = lexer->lexer("../fly.txt");
 
 
-  parserThread.join();
+  //parserThread.join();
 
-  delete parser;
+  //delete parser;
 
   return 0;
 

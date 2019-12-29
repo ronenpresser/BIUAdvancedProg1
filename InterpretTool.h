@@ -44,6 +44,10 @@ class Variable : public Expression {
     return this->name;
   }
 
+  string getSimPath() {
+      return this->simPath;
+  }
+
   void setValue(double val) {
     this->value = val;
   }

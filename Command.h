@@ -9,6 +9,10 @@
 #include <string>
 #include <vector>
 #include "InterpretTool.h"
+#include <sys/socket.h>
+#include <iostream>
+#include <unistd.h>
+#include <netinet/in.h>
 
 using namespace std;
 

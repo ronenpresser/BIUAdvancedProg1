@@ -5,22 +5,21 @@
 #include <algorithm>
 #include "Parser.h"
 #include "Command.h"
-void Parser::parse(vector<string> *tokensVec) {
-
+void Parser::parse(vector<string> tokensVec) {
   int index = 0;
 
-  while (index < tokensVec->size()) {
-    string lowerCaseLine = tokensVec->at(index);
+  while (index < tokensVec.size()) {
+    string lowerCaseLine = tokensVec.at(index);
     transform(lowerCaseLine.begin(),
               lowerCaseLine.end(),
               lowerCaseLine.begin(),
               ::tolower);
     if (this->commands_map.count(lowerCaseLine)) {
       Command *c = this->commands_map[lowerCaseLine];
-      index += c->execute(*tokensVec, index, this);
-    } else if (this->symbol_table.count(tokensVec->at(index))) {
+      index += c->execute(tokensVec, index, this);
+    } else if (this->symbol_table.count(tokensVec.at(index))) {
       Command *c = this->commands_map["="];
-      index += c->execute(*tokensVec, index, this);
+      index += c->execute(tokensVec, index, this);
     }
   }
 }

@@ -33,7 +33,6 @@ class Parser {
   map<string, Variable *> simPathToVarMap;
   map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
-  map<string, float> simulatorValues;
 
 
  public:
@@ -41,8 +40,7 @@ class Parser {
     buildMaps();
     interpret_tool = new InterpretTool();
   }
-
-  void parse(vector<string> *tokensVector);
+  void parse(vector<string> tokensVector);
   void buildMaps();
   InterpretTool *getInterpreter();
   void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
@@ -55,12 +53,6 @@ class Parser {
   }
   string getSimulatorPathByIndex(int index){
       return this->indexToSimPathMap[index];
-  }
-  void insert_to_simulator_values(string path, float value){
-      this->simulatorValues.insert(make_pair(path,value));
-  }
-  float getValueBySimulatorPath(string path){
-      return this->simulatorValues[path];
   }
   string getSimulatorPathByVarName(string varName) {
 

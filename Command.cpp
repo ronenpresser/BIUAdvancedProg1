@@ -17,6 +17,7 @@ static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
 static int const STEPS_FOR_IF_OR_LOOP_COMMAND = 3;
 
 int sockID;
+int client_socket;
 map<string, float> simulatorValues;
 
 void sleepFunc(int sleepParam) {
@@ -76,7 +77,7 @@ void readAndUpdateValuesFunc(vector<string> &tokensVec, int currIndex, Parser *p
 }
 
 int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-  int client_socket, sockserver, sockclient;
+  int sockserver, sockclient;
   sockserver = socket(AF_INET, SOCK_STREAM, 0);
   if (sockserver == -1) {
     std::cerr << "Cannot create a socket" << std::endl;

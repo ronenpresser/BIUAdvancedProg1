@@ -140,12 +140,12 @@ void Lexer::toWithoutSpaces(string &withoutSpaces) const {
 bool Lexer::isWhileOrConditionCommand(const string &line) const {
   return (line.find("while") != string::npos
       || line.find("if") != string::npos
-      && line.find("<") != string::npos
-      && line.find(">") != string::npos
-      && line.find(">=") != string::npos
-      && line.find("<=") != string::npos
-      && line.find("==") != string::npos
-      && line.find("!=") != string::npos);
+          && line.find("<") != string::npos
+          && line.find(">") != string::npos
+          && line.find(">=") != string::npos
+          && line.find("<=") != string::npos
+          && line.find("==") != string::npos
+          && line.find("!=") != string::npos);
 }
 bool Lexer::isFuncCommand(const string &line) const {
 
@@ -156,7 +156,7 @@ bool Lexer::isFuncCommand(const string &line) const {
 bool Lexer::isVarDefineCommand(const string &line) const {
 
   return line.find("var") != string::npos
-      && (line.find("<-") != string::npos || line.find("->") != string::npos);
+      && (line.find("<-") != string::npos || line.find("->") != string::npos || line.find("=") != string::npos);
 
 }
 bool Lexer::isCommandMethod(const string &line) const {
@@ -206,13 +206,13 @@ void Lexer::addVarTokensToVector(const string &line, vector<string> &tokensVecto
   istringstream tokenStream(line);
   while (getline(tokenStream, token, ' ')) {
     if (token.find("sim") != string::npos) {
-      tokensVector.push_back("sim");
+      //tokensVector.push_back("sim");
 
       string inParens = token.substr(
           token.find_first_of("\""),
           token.find_first_of(')') - token.find_first_of("\""));
-      if(inParens.at(1) == '/'){
-          inParens = "\"" + inParens.substr(2, inParens.length() - 3);
+      if (inParens.at(1) == '/') {
+        inParens = "\"" + inParens.substr(2, inParens.length() - 3);
       }
       tokensVector.push_back(inParens);
     } else {

@@ -39,6 +39,7 @@ class Variable : public Expression {
   string name;
   string simulatorPath;
   bool bindingDirection; // false for right, true for left.
+  bool isLocalVar;
  public:
   string getName() {
     return this->name;
@@ -52,18 +53,26 @@ class Variable : public Expression {
     return this->bindingDirection;
   }
 
+  bool isLocalVariable() {
+
+    return this->isLocalVar;
+  }
+
   string getSimulatorPath() {
     return simulatorPath;
   }
-float getValue() {
-      return this->value;
+  float getValue() {
+    return this->value;
   }
   virtual double calculate() {
     return value;
   }
-  Variable(string nameString, double val, string path, bool bindingDir) : value(val),
-                                                                          name(nameString),
-                                                                          bindingDirection(bindingDir) {
+  Variable(string nameString, double val, string path, bool bindingDir, bool isLocalVariable) : value(val),
+                                                                                                name(nameString),
+                                                                                                bindingDirection(
+                                                                                                    bindingDir),
+                                                                                                isLocalVar(
+                                                                                                    isLocalVariable) {
     if (path.at(0) == '/') {
       this->simulatorPath = path.substr(1, path.length() - 1);
     } else { simulatorPath = path; }

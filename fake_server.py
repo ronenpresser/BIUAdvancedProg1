@@ -40,7 +40,7 @@ DEFAULT_LISTEN_PORT = 5402 #client
 DEFAULT_TARGET_PORT = 5400 #server
 DEFAULT_SOCKET_BACKLOG = 5
 DEFAULT_SLEEP_INTERVAL = 0.5
-CLIENT_UPDATE_INTERVAL = 10.0
+CLIENT_UPDATE_INTERVAL = 1 #controls how fast this client sends you values
 ALTITUDE_UPDATE_INTERVAL = 1.0
 
 gear_variables = []
@@ -56,10 +56,23 @@ def get_gear_variable(var_name):
 
 def gear_variable_to_string():
     with gear_variables_lock:
-        print("len ", len(gear_variables))
+        update_gear_values()
+        #print("len ", len(gear_variables))
         #print("Printing all values before sending")
         #[print(str(variable.var_value),str(variable.var_name)) for variable in gear_variables]
         return ','.join(str(variable.var_value) for variable in gear_variables).encode('ASCII')
+
+def update_gear_values(): #you can control here how fast rpm and alt change.
+        rpm = gear_variables[-1]
+        print("RPM name - ", rpm.var_name)
+        if rpm.var_value < 850:
+            rpm.var_value += 20.0
+            gear_variables[-1] = rpm
+        else:
+            alt = gear_variables[4]
+            print("ALT name ", alt.var_name)
+            alt.var_value += 100
+            gear_variables[4] = alt
 
 
 class GearParams:
@@ -113,7 +126,7 @@ def parse_xml(xml_path): #parsing generic_small.xml
     e = ElementTree.parse(xml_path).getroot()
     output = e.findall('generic')[0].findall('output')[0].findall('chunk')
     for x in output:
-        gear_variables.append(GearParams(x.find('node').text, 0.0))
+        gear_variables.append(GearParams(x.find('node').text, 1.0))
 
     logging.debug(gear_variables)
 
@@ -200,12 +213,12 @@ def client(): #acts as client to our server, sends data every certain time inter
 
     while True:
         time.sleep(CLIENT_UPDATE_INTERVAL)
-        sock.send(gear_variable_to_string())
+        to_send = gear_variable_to_string() + NEWLINE
+        sock.send(to_send) #notice our server may receive multiple flightdata as one long buffer,
         logging.info('sent to server flight data')
-        sock.send(NEWLINE) #notice our server may receive multiple flightdata as one long buffer,
         #but each flight data will be separated by '\n'.
         '''
-        Notice a single update contains 23 values, as the number of variables in generic_small.xml.
+        Notice a single update contains 36 values, as the number of variables in generic_small.xml.
         example: '0.0,35.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0\n0.0,
         69.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0\n0.0,73.0,
         0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0\n0.0,73.0,0.0,0.0,

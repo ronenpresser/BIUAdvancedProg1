@@ -267,13 +267,20 @@ void InterpretTool::setVariables(string expressionString) {
     regex validNumberPattern(pattern2);
 
     try {
-      if (!regex_match(innerTokens.at(0), validVariablePattern)
-          || !regex_match(innerTokens.at(1), validNumberPattern)
-          || !regex_match(innerTokens.at(1), validVariablePattern)) {
-        throw "illegal variable assignment!";
+      bool r1 = regex_match(innerTokens.at(0), validVariablePattern);
+      bool r2 = regex_match(innerTokens.at(1), validNumberPattern);
+      //bool r3 = regex_match(innerTokens.at(1), validVariablePattern);
+//      if(!r1 || !r2){
+//        if(!r1) throw "illegal variable assignment at regex match!";
+//        if(!r2){
+//          if(!r3)"illegal variable assignment at regex match!";
+//        }
+//      }
+      if (!r1 || !r2) {
+        throw "illegal variable assignment at regex match!";
       }
       //double value = stod(innerTokens.at(1));
-      double value = interpretMathExpression(innerTokens.at(1))->calculate();
+      float value = interpretMathExpression(innerTokens.at(1))->calculate();
 
       bool empty = this->varMap.empty();
       pair<string, double> p = make_pair(innerTokens.at(0), value);

@@ -13,21 +13,14 @@ void parse1(Parser *parser, string path) {
 
 int main(int argc, char const *argv[]) {
 
-  //Parser *parser = new Parser();
-
-  vector<string> tokens = (new Lexer())->lexer("../fly.txt");
+  //TODO change the path to argv
+  vector<string> tokens = (new Lexer())->lexer("../fly1.txt");
   Parser * parser = new Parser();
 
   parser->parse(tokens);
-  //parser->parse(lexer->lexer("../fly.txt"));
-  //thread parserThread(parse, parser, "../fly.txt"); // argv[1]
-  //Lexer *lexer = new Lexer();
-  //vector<string> *tokensVec = lexer->lexer("../fly.txt");
 
 
-  //parserThread.join();
-
-  //delete parser;
+  delete parser;
 
   return 0;
 

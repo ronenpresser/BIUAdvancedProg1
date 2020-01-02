@@ -16,7 +16,6 @@ class SymbolTable {
  private:
   map<string, Variable *> symbol_map;
  public:
-
   void setValue(string varName, float value);
   void insert(Variable *var);
   void clear();
@@ -34,8 +33,9 @@ class Parser {
   map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
 
-
  public:
+
+  bool canProceedParsing;
   Parser() {
     buildMaps();
     interpret_tool = new InterpretTool();
@@ -43,27 +43,30 @@ class Parser {
   void parse(vector<string> tokensVector);
   void buildMaps();
   InterpretTool *getInterpreter();
-  void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection);
+  void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection, bool isVarAssignment);
   Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
   bool isExistsInSymbolTable(string key);
   bool isBindingDirectionLeft(string varName);
   float getValueOfSymbol(string varName) {
-      return this->symbol_table.getVariable(varName)->getValue();
+    return this->symbol_table.getVariable(varName)->getValue();
   }
-  string getSimulatorPathByIndex(int index){
-      return this->indexToSimPathMap[index];
+  string getSimulatorPathByIndex(int index) {
+    return this->indexToSimPathMap[index];
   }
   string getSimulatorPathByVarName(string varName) {
 
-      return this->symbol_table.getVariable(varName)->getSimulatorPath();
+    return this->symbol_table.getVariable(varName)->getSimulatorPath();
+  }
+  bool getIsLocalVar(string varName) {
+    return this->symbol_table.getVariable(varName)->isLocalVariable();
   }
 
   virtual ~Parser();
 
-  //friend class Command;
 
   void updateValue(string varName, float newVal);
+  string getNameOfSymbolBySimulatorPath(string path);
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

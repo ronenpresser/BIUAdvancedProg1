@@ -20,6 +20,8 @@ Expression *InterpretTool::interpretMathExpression(string expressionString) {
       != count(expressionString.begin(), expressionString.end(), ')')))
     throw "Invalid math expression.";
 
+  //TODO fix it to support expressions like -var
+
   queue<tuple<string, bool>> outputQueue;
   //the operator and if it is an unary operator.
   stack<tuple<string, bool>> operatorStack;
@@ -216,9 +218,10 @@ Expression *InterpretTool::interpretBoolExpression(string expressionString) {
   } else {
     throw "Invalid boolean expression.";
   }
-  string leftExpress = expressionString.substr(0,
-                                               expressionString.length()
-                                                   - expressionString.find_first_of(booleanOperator));
+  int lengthOfLeftSide = 0;
+  while (expressionString.at(lengthOfLeftSide) != booleanOperator.at(0))
+    lengthOfLeftSide++;
+  string leftExpress = expressionString.substr(0, lengthOfLeftSide);
   string rightExpress = expressionString.substr(leftExpress.length() + booleanOperator.length(),
                                                 expressionString.length()
                                                     - (leftExpress.length() + booleanOperator.length()));
@@ -254,7 +257,6 @@ void InterpretTool::setVariables(string expressionString) {
   //Then, split each of the tokens by '='.
 
   for (string s : tokens) {
-
     vector<std::string> innerTokens;
     string innerToken;
     istringstream innerTokenStream(s);
@@ -279,8 +281,8 @@ void InterpretTool::setVariables(string expressionString) {
       if (!r1 || !r2) {
         throw "illegal variable assignment at regex match!";
       }
-      //double value = stod(innerTokens.at(1));
-      float value = interpretMathExpression(innerTokens.at(1))->calculate();
+
+      float value = stof(innerTokens.at(1)); //interpretMathExpression(innerTokens.at(1))->calculate();
 
       bool empty = this->varMap.empty();
       pair<string, double> p = make_pair(innerTokens.at(0), value);
@@ -292,8 +294,8 @@ void InterpretTool::setVariables(string expressionString) {
       } else {
         this->varMap.insert(p);
       }
-    } catch (...) {
-      throw "illegal variable assignment!";
+    } catch (const char *e) {
+      throw e;
     }
   }
 }
@@ -470,9 +472,6 @@ double BooleanExpression::calculate() {
   try {
     double rightExp = this->right->calculate();
     double leftExp = this->left->calculate();
-    if (rightExp == 0) {
-      throw "Cannot divide by zero";
-    }
 
     return this->boolOperators[this->boolCon](leftExp, rightExp);
 

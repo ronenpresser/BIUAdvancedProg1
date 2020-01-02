@@ -73,10 +73,11 @@ class Variable : public Expression {
                                                                                                     bindingDir),
                                                                                                 isLocalVar(
                                                                                                     isLocalVariable) {
-    if (path.at(0) == '/') {
-      this->simulatorPath = path.substr(1, path.length() - 1);
-    } else { simulatorPath = path; }
-
+    if(!isLocalVariable) {
+      if (path.at(0) == '/') {
+        this->simulatorPath = path.substr(1, path.length() - 1);
+      } else { simulatorPath = path; }
+    }
   }
 
   Variable(string nameString, double val, string path) : value(val), name(nameString), simulatorPath(path) {}
@@ -98,7 +99,6 @@ class Variable : public Expression {
   Variable &operator--(const int value);
 
 };
-
 class InterpretTool {
 
  private:
@@ -207,33 +207,33 @@ class BooleanExpression : public BinaryOperator {
 
     auto stringBoolPairL = make_pair(
         "<",
-        [](const double &left, const double &right) {
-          return left < right;
+        [](const double &leftE, const double &rightE) {
+          return leftE < rightE;
         });
     boolOperators.insert(stringBoolPairL);
     auto stringBoolPairG = make_pair(
-        ">", [](const double &left, const double &right) {
-          return left > right;
+        ">", [](const double &leftE, const double &rightE) {
+          return leftE > rightE;
         });
     boolOperators.insert(stringBoolPairG);
     auto stringBoolPairLE = make_pair(
-        "<=", [](const double &left, const double &right) {
-          return left <= right;
+        "<=", [](const double &leftE, const double &rightE) {
+          return leftE <= rightE;
         });
     boolOperators.insert(stringBoolPairLE);
     auto stringBoolPairGE = make_pair(
-        ">=", [](const double &left, const double &right) {
-          return left >= right;
+        ">=", [](const double &leftE, const double &rightE) {
+          return leftE >= rightE;
         });
     boolOperators.insert(stringBoolPairGE);
     auto stringBoolPairE = make_pair(
-        "==", [](const double &left, const double &right) {
-          return left == right;
+        "==", [](const double &leftE, const double &rightE) {
+          return leftE == rightE;
         });
     boolOperators.insert(stringBoolPairE);
     auto stringBoolPairNE = make_pair(
-        "!=", [](const double &left, const double &right) {
-          return left != right;
+        "!=", [](const double &leftE, const double &rightE) {
+          return leftE != rightE;
         });
     boolOperators.insert(stringBoolPairNE);
 

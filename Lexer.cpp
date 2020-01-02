@@ -9,10 +9,10 @@
 #include <regex>
 using namespace std;
 
-vector<string> Lexer::lexer(string filePath) {
+vector<string> Lexer::lexer(string filePath) { //change string path to filePath
 
   string line;
-  int linesNum = 0;
+  unsigned int linesNum = 0;
   vector<string> linesVector;
   vector<string> tokensVector;
   string path = "../fly.txt";
@@ -53,7 +53,7 @@ vector<string> Lexer::lexer(string filePath) {
       toWithoutSpaces(noSpaces);
       tokensVector.push_back(noSpaces);
       tokensVector.push_back("{");
-      int index = i + 1;
+      unsigned int index = i + 1;
       while (index <= linesVector.size() && linesVector.at(index) != "}") {
         string innerLine = linesVector.at(index);
         //trim all spaces.
@@ -79,7 +79,7 @@ vector<string> Lexer::lexer(string filePath) {
 
       i = index;
 
-    } else {
+    } else {//TODO support empty line
       string withoutSpaces = line;
       toWithoutSpaces(withoutSpaces);
       string lineToken;
@@ -138,14 +138,14 @@ void Lexer::toWithoutSpaces(string &withoutSpaces) const {
                              withoutSpaces.end(), ' '), withoutSpaces.end());
 }
 bool Lexer::isWhileOrConditionCommand(const string &line) const {
-  return (line.find("while") != string::npos
-      || line.find("if") != string::npos
-          && line.find("<") != string::npos
-          && line.find(">") != string::npos
-          && line.find(">=") != string::npos
-          && line.find("<=") != string::npos
-          && line.find("==") != string::npos
-          && line.find("!=") != string::npos);
+  return ((line.find("while") != string::npos
+      || line.find("if") != string::npos)
+      && (line.find("<") != string::npos
+          || line.find(">") != string::npos
+          || line.find(">=") != string::npos
+          || line.find("<=") != string::npos
+          || line.find("==") != string::npos
+          || line.find("!=") != string::npos));
 }
 bool Lexer::isFuncCommand(const string &line) const {
 
@@ -211,8 +211,9 @@ void Lexer::addVarTokensToVector(const string &line, vector<string> &tokensVecto
       string inParens = token.substr(
           token.find_first_of("\""),
           token.find_first_of(')') - token.find_first_of("\""));
+
       if (inParens.at(1) == '/') {
-        inParens = "\"" + inParens.substr(2, inParens.length() - 3);
+        inParens = inParens.substr(2, inParens.length() - 3);
       }
       tokensVector.push_back(inParens);
     } else {

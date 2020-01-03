@@ -66,42 +66,91 @@ void readAndUpdateValuesFunc(Parser *parser) {
       unsigned int indexForIndexToSimPathMap = 0;
       string wholeValues = buffer;
       vector<string> lines = splitByChar(wholeValues, '\n');
-      unsigned int numOfLines = 1;
-      if (!lines.empty()) {
-        if (lines.size() > 1)
-          numOfLines = 2;
-        for (unsigned int i = 0; i < numOfLines; i++) {
-          vector<string> valueStrings;
-          if (i == 0) {
-            indexForIndexToSimPathMap = 36 - valueStrings.size();
-            valueStrings = splitByChar(lines.at(0), ',');
-          } else {
-            indexForIndexToSimPathMap = 0;
-            valueStrings = splitByChar(lines.at(lines.size() - 1), ',');
-          }
-          for (string valueString : valueStrings) {
-            if (!valueString.empty()) {
-              string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
-              try {
-                float value = stof(valueString);
-                if (!simulatorValues.count(path)) {
-                  simulatorValues.insert(make_pair(path, value));
-                } else {
-                  simulatorValues[path] = value;
-                }
-              } catch (const invalid_argument &e) {
-                cout << "invalid argumnet at stof readandupdate: " + valueString << endl;
+      if (lines.empty()) continue;
 
-              } catch (const char *e) {
-                cout << e << endl;
-              }
-              indexForIndexToSimPathMap++;
-            }
+      vector<string> valueStrings = splitByChar(lines.at(0), ',');
+      indexForIndexToSimPathMap = 36 - valueStrings.size();
+      for (string valueString : valueStrings) {
+        if (valueString.empty()) continue;
+        string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
+
+        try {
+          float value = stof(valueString);
+          if (!simulatorValues.count(path)) {
+            simulatorValues.insert(make_pair(path, value));
+          } else {
+            simulatorValues[path] = value;
           }
+        } catch (const invalid_argument &e) {
+          cout << "invalid argumnt at stof readandupdate:" + valueString << endl;
+
+        } catch (const char *e) {
+          cout << e << endl;
+        }
+        indexForIndexToSimPathMap++;
+      }
+      if (lines.size() > 1) {
+        indexForIndexToSimPathMap = 0;
+        vector<string> valueStrings = splitByChar(lines.at(lines.size() - 1), ',');
+        for (string valueString : valueStrings) {
+          if (valueString.empty()) continue;
+          string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
+          try {
+            float value = stof(valueString);
+            if (!simulatorValues.count(path)) {
+              simulatorValues.insert(make_pair(path, value));
+            } else {
+              simulatorValues[path] = value;
+            }
+          } catch (const invalid_argument &e) {
+            cout << "invalid argumnt at stof readandupdate:" + valueString << endl;
+
+          } catch (const char *e) {
+            cout << e << endl;
+          }
+          indexForIndexToSimPathMap++;
         }
       }
-
       this_thread::sleep_for(1s);
+
+//      unsigned int indexForIndexToSimPathMap = 0;
+//      string wholeValues = buffer;
+//      vector<string> lines = splitByChar(wholeValues, '\n');
+//      unsigned int numOfLines = 1;
+//      if (!lines.empty()) {
+//        if (lines.size() > 1)
+//          numOfLines = 2;
+//        for (unsigned int i = 0; i < numOfLines; i++) {
+//          vector<string> valueStrings;
+//          if (i == 0) {
+//            indexForIndexToSimPathMap = 36 - valueStrings.size();
+//            valueStrings = splitByChar(lines.at(0), ',');
+//          } else {
+//            indexForIndexToSimPathMap = 0;
+//            valueStrings = splitByChar(lines.at(lines.size() - 1), ',');
+//          }
+//          for (string valueString : valueStrings) {
+//            if (!valueString.empty()) {
+//              string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
+//              try {
+//                float value = stof(valueString);
+//                if (!simulatorValues.count(path)) {
+//                  simulatorValues.insert(make_pair(path, value));
+//                } else {
+//                  simulatorValues[path] = value;
+//                }
+//              } catch (const invalid_argument &e) {
+//                cout << "invalid argumnet at stof readandupdate: " + valueString << endl;
+//
+//              } catch (const char *e) {
+//                cout << e << endl;
+//              }
+//              indexForIndexToSimPathMap++;
+//            }
+//          }
+//        }
+//      }
+
     }
   }
 }
@@ -172,8 +221,8 @@ int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pa
   }
   sockaddr_in address;
   address.sin_family = AF_INET;
-  //const char *ipc = ip.c_str(); //TODO check why it doesnt work to put a variable
-  address.sin_addr.s_addr = inet_addr("127.0.0.1");
+  const char *ipc = ip.c_str();
+  address.sin_addr.s_addr = inet_addr(ipc);
   address.sin_port = htons(port);
   thread connect(connectFunc, address);
   connect.join();
@@ -224,8 +273,8 @@ int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parse
   int returnedSteps = 0;
   bool wasFirstLoop = false;
   buildCommandsVector(tokensVec, parser, index);
-
-  while (isConditionTrue(tokensVec.at(currIndex + 1), *parser)) {
+  bool expIsTrue = isConditionTrue(tokensVec.at(currIndex + 1), *parser);
+  while (expIsTrue) {
     vector<Command *> commands = getInnerCommands();
     for (Command *c : commands) {
       returnedSteps = c->execute(tokensVec, index, parser);
@@ -236,6 +285,7 @@ int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parse
     if (!wasFirstLoop) {
       wasFirstLoop = true;
     }
+    expIsTrue = isConditionTrue(tokensVec.at(currIndex + 1), *parser);
   }
   if (steps + 1 + currIndex >= tokensVec.size()) done = true;
   return steps + 1;
@@ -293,7 +343,7 @@ int PrintCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pars
       throw e;
     }
   }
-  //if (tokensVec.at(currIndex + 1) == "\"done\"") done = true;
+  if (tokensVec.at(currIndex + 1) == "\"done\"") done = true;
   if (currIndex + 2 >= tokensVec.size()) done = true;
 
   return 2;
@@ -313,9 +363,10 @@ int VarAssignmentCommand::execute(vector<string> &tokensVec, int currIndex, Pars
       string simPath = pars->getSimulatorPathByVarName(varName);
       string message = "set " + simPath + " " + to_string(val) + "\r\n";
       ssize_t return_val = write(sockID, message.c_str(), message.length());
-      if (return_val == -1){
-        cerr << "problem at writing to simulator : " + message << endl;
+      if (return_val == -1) {
+        //cerr << "problem at writing to simulator : " + message << endl;
         done = true;
+        pars->shouldStopParsing = true;
       }
     }
     pars->updateValue(tokensVec.at(currIndex), val);

@@ -36,9 +36,11 @@ class Parser {
  public:
 
   bool canProceedParsing;
+  bool shouldStopParsing;
   Parser() {
     buildMaps();
     interpret_tool = new InterpretTool();
+    shouldStopParsing = false;
   }
   void parse(vector<string> tokensVector);
   void buildMaps();

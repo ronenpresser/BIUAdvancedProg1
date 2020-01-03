@@ -9,13 +9,13 @@
 #include <regex>
 using namespace std;
 
-vector<string> Lexer::lexer(string filePath) { //change string path to filePath
+vector<string> Lexer::lexer(string filePath) {
 
   string line;
   unsigned int linesNum = 0;
   vector<string> linesVector;
   vector<string> tokensVector;
-  string path = "../fly.txt";
+  string path = filePath;
   fstream file(path, ios::in);
 
   while (getline(file, line)) {
@@ -29,6 +29,11 @@ vector<string> Lexer::lexer(string filePath) { //change string path to filePath
   for (i = 0; i < linesNum; i++) {
 
     line = linesVector.at(i);
+    string withoutSpaces = line;
+    toWithoutSpaces(withoutSpaces);
+    withoutSpaces.erase(std::remove(withoutSpaces.begin(),
+                                    withoutSpaces.end(), '\t'), withoutSpaces.end());
+    if (withoutSpaces.empty()) continue;
     //bool isMethod = regex_match(line, r);
     bool isCommand = isCommandMethod(line);
     //bool isFunc = isFuncCommand(line);
@@ -56,12 +61,20 @@ vector<string> Lexer::lexer(string filePath) { //change string path to filePath
       unsigned int index = i + 1;
       while (index <= linesVector.size() && linesVector.at(index) != "}") {
         string innerLine = linesVector.at(index);
-        //trim all spaces.
+
+        int startingIndex = 0;
+        auto it = innerLine.begin();
+
+        while (innerLine.at(startingIndex) != '_' && !isalpha(innerLine.at(startingIndex))) {
+          ++it;
+          ++startingIndex;
+        }
+        //trim tabs from start to first char that is not '_' or letter.
         innerLine.erase(std::remove(innerLine.begin(),
-                                    innerLine.end(), ' '), innerLine.end());
-        //trim tabs.
+                                    it, '\t'), it);
+        //trim all spaces from start to first char that is not '_' or letter.
         innerLine.erase(std::remove(innerLine.begin(),
-                                    innerLine.end(), '\t'), innerLine.end());
+                                    it, ' '), it);
 
         vector<std::string> innerLinesTokens;
         string innerLineToken;
@@ -79,7 +92,7 @@ vector<string> Lexer::lexer(string filePath) { //change string path to filePath
 
       i = index;
 
-    } else {//TODO support empty line
+    } else {
       string withoutSpaces = line;
       toWithoutSpaces(withoutSpaces);
       string lineToken;
@@ -193,7 +206,6 @@ void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVe
     istringstream tokenStream1(parameters);
     while (getline(tokenStream1, token1, ',')) {
       tokensVector.push_back(token1);
-      //tokens.push_back(token1);
     }
   } else {
     tokensVector.push_back(tokens.at(1).substr(0, tokens.at(1).length() - 1));

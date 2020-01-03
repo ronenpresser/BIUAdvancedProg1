@@ -20,7 +20,8 @@ Expression *InterpretTool::interpretMathExpression(string expressionString) {
       != count(expressionString.begin(), expressionString.end(), ')')))
     throw "Invalid math expression.";
 
-  //TODO fix it to support expressions like -var
+  // Wrap variables in the string with parens.
+  addParensAroundVars(expressionString);
 
   queue<tuple<string, bool>> outputQueue;
   //the operator and if it is an unary operator.
@@ -194,6 +195,60 @@ Expression *InterpretTool::interpretMathExpression(string expressionString) {
   expressionsStack.pop();
 
   return e;
+}
+void InterpretTool::addParensAroundVars(string &expressionString) const {
+  vector<string> decresingOrderOfMapKeys;
+  //create vector with the keys of the varMap.
+  for (auto keyVal:this->varMap) {
+    decresingOrderOfMapKeys.push_back(keyVal.first);
+  }
+
+  for (auto p : this->varMap) {
+    //foreach pair in the var map track it in the string.
+    size_t index = 0;
+    size_t indexForComparsionSubstring = 0;
+    while (true) {
+      bool keyExistsThatContains = false;
+      string containingKey;
+      // Locate the substring to replace.
+      index = expressionString.find(p.first, index);
+      //if doesnt exist, break and continue to the next key.
+      if (index == std::string::npos) break;
+
+      unsigned int size = decresingOrderOfMapKeys.size();
+      for (int i = size - 1; i >= 0; --i) {
+        //from vector.size() to 0 (decreasing order because the varMap is ordered in asceding order
+        //find the first key(var name) that contains as asubstring the current key.
+        string currKey = decresingOrderOfMapKeys.at(i);
+        if (p.first != currKey) {
+          if (currKey.find(p.first) != string::npos) {
+            //find the first occurence of the bigger string,
+            indexForComparsionSubstring = expressionString.find(currKey, index);
+            //if its the same as the current key, flag it and break
+            if (indexForComparsionSubstring == index) {
+              keyExistsThatContains = true;
+              containingKey = currKey;
+              break;
+            }
+          }
+        }
+      }
+      if (keyExistsThatContains) {
+
+        // if we found a containing key,advance index with the length of the contaning key.
+        index += containingKey.length();
+      } else {
+        //else, make the replacement.
+        expressionString.replace(index, p.first.length(), "(" + p.first + ")");
+        // advance the index.
+        //if the length of the current key is 1, it a problem because the var has parens around him.
+        //for example: x+1 => (x)+1 => ((x)) +1 an so on, when we advance the index by one it remains on the variable.
+        if (p.first.length() == 1) index += 2;
+
+        else index += p.first.length();
+      }
+    }
+  }
 }
 
 Expression *InterpretTool::interpretBoolExpression(string expressionString) {

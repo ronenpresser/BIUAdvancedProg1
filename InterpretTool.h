@@ -114,6 +114,7 @@ class InterpretTool {
     }
   }
   Expression *interpretBoolExpression(string expressionString);
+  void addParensAroundVars(string &expressionString) const;
 };
 
 class UnaryOperator : public Expression {

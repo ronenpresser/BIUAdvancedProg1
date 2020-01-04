@@ -49,8 +49,8 @@ throttle = 1
 takeoff(var x) {
    Print(x)
    while alt < x {
-	rudder = (h0 - heading)/80
-	aileron = -roll / 70
+	rudder = (h0 - (heading))/80
+	aileron = -(roll) / 70
 	elevator = pitch / 50
     Print(alt)
 	Sleep(250)

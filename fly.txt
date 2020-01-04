@@ -1,5 +1,6 @@
 openDataServer(5400)
 connectControlClient("127.0.0.1",5402)
+
 var warp -> sim("/sim/time/warp")
 var magnetos -> sim("/controls/switches/magnetos")
 var throttle -> sim("/controls/engines/current-engine/throttle")
@@ -40,6 +41,9 @@ autostart = 1
 Print("engine is warming...")
 Print(rpm)
 while rpm <= 750 {
+
+}
+while rpm <= 750 {
   Print(rpm)
 }
 Sleep(5000)
@@ -48,22 +52,10 @@ var h0 = heading
 breaks = 0
 throttle = 1
 Print("before while")
-if alt < 1000 {
-  Print("in if")
-  Print(alt)
-  rudder = (h0 - heading)/80
-  aileron = -roll / 70
-  elevator = pitch / 50
-  blc=1
-  Sleep(19)
-  blc=0
-  Sleep(250)
-  Print("in end if")
-}
 while alt < 1000 {
   Print(alt)
-  rudder = (h0 - heading)/80
-  aileron = -roll / 70
+  rudder = (h0 - (heading))/80
+  aileron = -(roll) / 70
   elevator = pitch / 50
   blc=1
   Sleep(19)

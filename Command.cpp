@@ -9,17 +9,12 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
-#include <cstring>
 #include <sstream>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <unordered_map>
-
-static int const STEPS_FOR_ONE_PARAMETER_COMMAND = 2;
-static int const STEPS_FOR_TWO_PARAMETERS_COMMAND = 3;
-static int const STEPS_FOR_IF_OR_LOOP_COMMAND = 3;
 
 int sockID;
 int client_socket;
@@ -28,6 +23,7 @@ bool done;
 mutex m;
 bool canConnectClient = false;
 bool clientDisconnected = false;
+//string wholeValues = "";
 void updateValuesOfSymbols(Parser &pars) {
   try {
     for (auto pair : simulatorValues) {
@@ -41,13 +37,8 @@ void updateValuesOfSymbols(Parser &pars) {
   } catch (const char *e) {
     cout << e << endl;
   }
+}
 
-}
-void sleepFunc(int sleepParam) {
-  m.lock();
-  this_thread::sleep_for(chrono::milliseconds(sleepParam));
-  m.unlock();
-}
 const vector<string> splitByChar(string wholeString, char delimeter) {
   vector<string> tokens;
   string token;
@@ -57,53 +48,50 @@ const vector<string> splitByChar(string wholeString, char delimeter) {
   }
   return tokens;
 }
-
+bool canBeFloat(string numString) {
+  try {
+    stof(numString);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
 void readAndUpdateValuesFunc(Parser *parser) {
-  char buffer[10000] = {0};
+  char buffer[1024] = {0};
   while (!done) {
-    int vl = read(client_socket, buffer, 10000);
+    int vl = read(client_socket, buffer, 1024);
     if (vl != -1) {
       unsigned int indexForIndexToSimPathMap = 0;
       string wholeValues = buffer;
       vector<string> lines = splitByChar(wholeValues, '\n');
-      if (lines.empty()) continue;
 
-      vector<string> valueStrings = splitByChar(lines.at(0), ',');
-      indexForIndexToSimPathMap = 36 - valueStrings.size();
-      for (string valueString : valueStrings) {
-        if (valueString.empty()) continue;
-        string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
-
-        try {
-          float value = stof(valueString);
-          if (!simulatorValues.count(path)) {
-            simulatorValues.insert(make_pair(path, value));
-          } else {
-            simulatorValues[path] = value;
-          }
-        } catch (const invalid_argument &e) {
-          cout << "invalid argumnt at stof readandupdate:" + valueString << endl;
-
-        } catch (const char *e) {
-          cout << e << endl;
-        }
-        indexForIndexToSimPathMap++;
-      }
-      if (lines.size() > 1) {
-        indexForIndexToSimPathMap = 0;
-        vector<string> valueStrings = splitByChar(lines.at(lines.size() - 1), ',');
+      for (unsigned int i = 0; i < lines.size(); i++) {
+        vector<string> valueStrings = splitByChar(lines.at(i), ',');
+        if (i != lines.size() - 1)
+          indexForIndexToSimPathMap = 36 - valueStrings.size();
+        else
+          indexForIndexToSimPathMap = 0;
         for (string valueString : valueStrings) {
           if (valueString.empty()) continue;
           string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
           try {
-            float value = stof(valueString);
+            int length = 0;
+            float value = 0;
+            if (canBeFloat(valueString)) value = stof(valueString);
+            else {
+              while (length < valueString.length()
+                  && (valueString.at(length) == '.' || isdigit(valueString.at(length)))) {
+                length++;
+              }
+              value = stof(valueString.substr(0, length));
+            }
             if (!simulatorValues.count(path)) {
               simulatorValues.insert(make_pair(path, value));
             } else {
               simulatorValues[path] = value;
             }
           } catch (const invalid_argument &e) {
-            cout << "invalid argumnt at stof readandupdate:" + valueString << endl;
+            cout << "invalid argument at stof readandupdate: " + valueString << endl;
 
           } catch (const char *e) {
             cout << e << endl;
@@ -111,46 +99,8 @@ void readAndUpdateValuesFunc(Parser *parser) {
           indexForIndexToSimPathMap++;
         }
       }
-      this_thread::sleep_for(1s);
-
-//      unsigned int indexForIndexToSimPathMap = 0;
-//      string wholeValues = buffer;
-//      vector<string> lines = splitByChar(wholeValues, '\n');
-//      unsigned int numOfLines = 1;
-//      if (!lines.empty()) {
-//        if (lines.size() > 1)
-//          numOfLines = 2;
-//        for (unsigned int i = 0; i < numOfLines; i++) {
-//          vector<string> valueStrings;
-//          if (i == 0) {
-//            indexForIndexToSimPathMap = 36 - valueStrings.size();
-//            valueStrings = splitByChar(lines.at(0), ',');
-//          } else {
-//            indexForIndexToSimPathMap = 0;
-//            valueStrings = splitByChar(lines.at(lines.size() - 1), ',');
-//          }
-//          for (string valueString : valueStrings) {
-//            if (!valueString.empty()) {
-//              string path = parser->getSimulatorPathByIndex(indexForIndexToSimPathMap);
-//              try {
-//                float value = stof(valueString);
-//                if (!simulatorValues.count(path)) {
-//                  simulatorValues.insert(make_pair(path, value));
-//                } else {
-//                  simulatorValues[path] = value;
-//                }
-//              } catch (const invalid_argument &e) {
-//                cout << "invalid argumnet at stof readandupdate: " + valueString << endl;
-//
-//              } catch (const char *e) {
-//                cout << e << endl;
-//              }
-//              indexForIndexToSimPathMap++;
-//            }
-//          }
-//        }
-//      }
-
+      //wholeValues = lines.at(lines.size() - 1) + ',';
+      updateValuesOfSymbols(*parser);
     }
   }
 }
@@ -166,7 +116,7 @@ void acceptFunc(int socket_server, sockaddr_in &address1) {
 }
 
 int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-  int sockserver;//, sockclient;
+  int sockserver;
   sockserver = socket(AF_INET, SOCK_STREAM, 0);
   if (sockserver == -1) {
     std::cerr << "Cannot create a socket" << std::endl;
@@ -183,9 +133,9 @@ int OpenServerCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
   if (listen(sockserver, SOMAXCONN) == -1) {
     std::cerr << "Error during listen command" << std::endl;
   }
-  thread accept(acceptFunc, sockserver, std::ref(address1));
+  thread acceptT(acceptFunc, sockserver, std::ref(address1));
 
-  accept.join();
+  acceptT.join();
   //sockclient = socket(AF_INET, SOCK_STREAM, 0);
   canConnectClient = true;
 
@@ -235,58 +185,51 @@ int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pa
   clientDisconnected = true;
   return 3;
 }
-
+void sleepFunc(int sleepParam) {
+  m.lock();
+  this_thread::sleep_for(chrono::milliseconds(sleepParam));
+  m.unlock();
+}
 int SleepCommand::execute(vector<string> &tokensVector, int currentIndex, Parser *parser) {
-  //TODO make the main sleep
   string sleepParameterToken = tokensVector.at(currentIndex + 1);
   InterpretTool *i = parser->getInterpreter();
   int sleepParameter = i->interpretMathExpression(sleepParameterToken)->calculate();
   //int sleepParameter = stoi(sleepParameterToken);
+  m.lock();
+  this_thread::sleep_for(chrono::milliseconds(sleepParameter));
+  m.unlock();
+//  thread sleepThread(sleepFunc, sleepParameter);
+//  sleepThread.join();
 
-  thread sleepThread(sleepFunc, sleepParameter);
-  sleepThread.join();
-
-  return STEPS_FOR_ONE_PARAMETER_COMMAND;
+  return SleepCommand::STEPS;
 
 }
 
 int IfCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-  int steps = STEPS_FOR_IF_OR_LOOP_COMMAND;
+  int steps = IfCommand::STEPS;
   int index = currIndex + 3;
-  int returnedSteps = 0;
   buildCommandsVector(tokensVec, parser, index);
+  vector<Command *> commands = getInnerCommands();
   if (isConditionTrue(tokensVec.at(currIndex + 1), *parser)) {
-    vector<Command *> commands = getInnerCommands();
-    for (Command *c : commands) {
-      returnedSteps = c->execute(tokensVec, index, parser);
-      steps += returnedSteps;
-      index += returnedSteps;
-    }
+    for (Command *c : commands) index += c->execute(tokensVec, index, parser);
   }
+  for (Command *c : commands) steps += c->getSteps();
   if (steps + 1 + currIndex >= tokensVec.size()) done = true;
   return steps + 1;
 }
 
 int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-  int steps = STEPS_FOR_IF_OR_LOOP_COMMAND;
+  int steps = LoopCommand::STEPS;
   int index = currIndex + 3;
-  int returnedSteps = 0;
-  bool wasFirstLoop = false;
   buildCommandsVector(tokensVec, parser, index);
   bool expIsTrue = isConditionTrue(tokensVec.at(currIndex + 1), *parser);
+  vector<Command *> commands = getInnerCommands();
   while (expIsTrue) {
-    vector<Command *> commands = getInnerCommands();
-    for (Command *c : commands) {
-      returnedSteps = c->execute(tokensVec, index, parser);
-      if (!wasFirstLoop) steps += returnedSteps;
-      index += returnedSteps;
-    }
+    for (Command *c : commands) index += c->execute(tokensVec, index, parser);
     index = currIndex + 3;
-    if (!wasFirstLoop) {
-      wasFirstLoop = true;
-    }
     expIsTrue = isConditionTrue(tokensVec.at(currIndex + 1), *parser);
   }
+  for (Command *c : commands) steps += c->getSteps();
   if (steps + 1 + currIndex >= tokensVec.size()) done = true;
   return steps + 1;
 }
@@ -318,12 +261,11 @@ int DefineVarCommand::execute(vector<string> &tokensVec, int currIndex, Parser *
 
   string name = tokensVec.at(currIndex + 1);
   parser->insert_to_symbol_table(name, value, simulatorPath, bindingDirection, isAssignment);
-  if (currIndex + 4 >= tokensVec.size()) done = true;
-  return 4;
+  if (currIndex + PrintCommand::STEPS >= tokensVec.size()) done = true;
+  return DefineVarCommand::STEPS;
 }
 
 int PrintCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
-  updateValuesOfSymbols(*parser);
   if (parser->isExistsInSymbolTable(tokensVec.at(currIndex + 1))) {
     std::cout << parser->getValueOfSymbol(tokensVec.at(currIndex + 1)) << std::endl;
   } else if (tokensVec.at(currIndex + 1).find("\"") != string::npos) {
@@ -344,27 +286,27 @@ int PrintCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pars
     }
   }
   if (tokensVec.at(currIndex + 1) == "\"done\"") done = true;
-  if (currIndex + 2 >= tokensVec.size()) done = true;
+  if (currIndex + PrintCommand::STEPS >= tokensVec.size()) done = true;
 
-  return 2;
+  return PrintCommand::STEPS;
 }
 
 int VarAssignmentCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pars) {
 
   try {
-    updateValuesOfSymbols(*pars);
+    //updateValuesOfSymbols(*pars);
     string varName = tokensVec.at(currIndex);
     bool isLocalVar = pars->getIsLocalVar(varName);
     bool isBindingDirectionLeft = pars->isBindingDirectionLeft(varName);
     InterpretTool *i = pars->getInterpreter();
-    Expression *e = i->interpretMathExpression(tokensVec.at(currIndex + 1));
+    string assignString = tokensVec.at(currIndex + 1);
+    Expression *e = i->interpretMathExpression(assignString);
     float val = e->calculate();
     if (!isLocalVar && !isBindingDirectionLeft) {
       string simPath = pars->getSimulatorPathByVarName(varName);
       string message = "set " + simPath + " " + to_string(val) + "\r\n";
       ssize_t return_val = write(sockID, message.c_str(), message.length());
       if (return_val == -1) {
-        //cerr << "problem at writing to simulator : " + message << endl;
         done = true;
         pars->shouldStopParsing = true;
       }
@@ -374,12 +316,72 @@ int VarAssignmentCommand::execute(vector<string> &tokensVec, int currIndex, Pars
     string ex = e;
     cout << "at var assignmnet " + ex << endl;
   }
-  if (currIndex + 2 >= tokensVec.size()) done = true;
+  if (currIndex + VarAssignmentCommand::STEPS >= tokensVec.size()) done = true;
 
-  return 2;
+  return VarAssignmentCommand::STEPS;
 
 }
+int DefineFuncCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
 
+  string functionName = tokensVec.at(currIndex);//takeoff
+  string parameterName = tokensVec.at(currIndex + 1);//takeoff_x
+  FuncCommand *func_command = new FuncCommand();
+  Variable *param = new Variable(parameterName, 0, "", false, true);
+  func_command->parameters.insert(make_pair(parameterName, param));
+  parser->insertParameterToSymbolTable(param);
+  int loopIndex = currIndex + 2;
+  while (tokensVec.at(loopIndex) != "}") {
+    string token = tokensVec.at(loopIndex);
+    string lowerCaseLine = token;
+    transform(lowerCaseLine.begin(), lowerCaseLine.end(), lowerCaseLine.begin(), ::tolower);
+    if (parser->isExistsInCommandsMap(token)) {
+      Command *c = parser->getCommand(token);
+      func_command->inner_commands.push_back(c);
+      if (lowerCaseLine == "print" || lowerCaseLine == "sleep")
+        loopIndex += c->getSteps();
+      if (lowerCaseLine == "while" || lowerCaseLine == "if") {
+        loopIndex += c->getSteps();
+        while (tokensVec.at(loopIndex) != "}") {
+          string token = tokensVec.at(loopIndex);
+          string lowerCaseLine = token;
+          transform(lowerCaseLine.begin(),
+                    lowerCaseLine.end(),
+                    lowerCaseLine.begin(),
+                    ::tolower);
+          if (parser->isExistsInCommandsMap(token)) {
+            Command *c = parser->getCommand(token);
+            func_command->inner_commands.push_back(c);
+            if (lowerCaseLine == "print" || lowerCaseLine == "sleep")
+              loopIndex += c->getSteps();
+          } else if (parser->isExistsInSymbolTable(token)) {
+            Command *c = parser->getCommand("=");
+            func_command->inner_commands.push_back(c);
+            loopIndex += 2;
+          }
+        }
+        loopIndex + 1;
+      }
+    } else if (parser->isExistsInSymbolTable(token)) {
+      Command *c = parser->getCommand("=");
+      func_command->inner_commands.push_back(c);
+      loopIndex += 2;
+    }
+  }
+  func_command->startingIndex = currIndex + 3;
+  parser->insertFuncCommandToCommandsMap(functionName, func_command);
+
+  return loopIndex - currIndex + 1;
+
+}
+int FuncCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
+  float value = stof(tokensVec.at(currIndex + 1));
+  this->parameters.at(0)->setValue(value);
+  int index = this->startingIndex;
+  for (Command *c : inner_commands) {
+    index = index + c->execute(tokensVec, index, parser);
+  }
+  return 1 + this->parameters.size();
+}
 void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index) {
   int currentIndex = index;
   this->inner_commands.clear();

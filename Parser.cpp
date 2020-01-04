@@ -1,64 +1,54 @@
-//
-// Created by amit on 14/12/2019.
-//
 
 #include <algorithm>
 #include <thread>
 #include "Parser.h"
 #include "Command.h"
 
-void openServerFunc(Command *c, vector<string> tokensVec, int currIndex, Parser *parser) {
+void executeCommandFunc(Command *c, vector<string> tokensVec, int currIndex, Parser *parser) {
   c->execute(tokensVec, currIndex, parser);
 }
-
-void connectClientFunc(Command *c, vector<string> tokensVec, int currIndex, Parser *parser) {
-  c->execute(tokensVec, currIndex, parser);
-}
-
 void Parser::parse(vector<string> tokensVec) {
-  unsigned int index = 0;
-  //open the server
-  string token = tokensVec.at(index);
+
 //  string lowerCaseLine = tokensVec.at(index);
 //  transform(lowerCaseLine.begin(),
 //            lowerCaseLine.end(),
 //            lowerCaseLine.begin(),
 //            ::tolower);
-  thread openServer(openServerFunc, this->commands_map[token], tokensVec, index, this);
-  index += 2;
-
-  //connect
-  token = tokensVec.at(index);
 //  transform(lowerCaseLine.begin(),
 //            lowerCaseLine.end(),
 //            lowerCaseLine.begin(),
 //            ::tolower);
-  thread connectClient(connectClientFunc, this->commands_map[token], tokensVec, index, this);
-
+  unsigned int index = 0;
+  //open the server with a thread
+  string token = tokensVec.at(index);
+  thread openServer(executeCommandFunc, this->commands_map[token], tokensVec, index, this);
+  index += 2;
+  //connect as a client with a thread
+  token = tokensVec.at(index);
+  thread connectClient(executeCommandFunc, this->commands_map[token], tokensVec, index, this);
   index += 3;
-
+  //wait for the ConnectClientCommand to exit the block call of accepting.
   while (!this->canProceedParsing) { this_thread::sleep_for(400ms); }
-  //cout << "after server and client" << endl;
+  //Proceed parsing.
   while (index < tokensVec.size() && !this->shouldStopParsing) {
     token = tokensVec.at(index);
-//    transform(lowerCaseLine.begin(),
-//              lowerCaseLine.end(),
-//              lowerCaseLine.begin(),
-//              ::tolower);
-    if (this->commands_map.count(token)) {
+    Command *c;
+    if (this->commands_map.count(token)) { // is a method command
       Command *c = this->commands_map[token];
-      index += c->execute(tokensVec, index, this);
-    } else if (this->symbol_table.count(token)) {
+    } else if (this->symbol_table.count(token)) { // is a variable assignment
       Command *c = this->commands_map["="];
-      index += c->execute(tokensVec, index, this);
+    } else { // else its executing a new defined function
+      Command *c = this->commands_map["function"];
     }
+    index += c->execute(tokensVec, index, this);
   }
-
+  //Now wait for the threads to end.
   openServer.join();
   connectClient.join();
 }
 
 void Parser::buildMaps() {
+  //Insert known commands to the commands_map;
   this->commands_map.insert(make_pair("openDataServer", new OpenServerCommand()));
   this->commands_map.insert(make_pair("connectControlClient", new ConnectCommand()));
   this->commands_map.insert(make_pair("Sleep", new SleepCommand()));
@@ -67,7 +57,9 @@ void Parser::buildMaps() {
   this->commands_map.insert(make_pair("=", new VarAssignmentCommand()));
   this->commands_map.insert(make_pair("if", new IfCommand()));
   this->commands_map.insert(make_pair("while", new LoopCommand()));
+  this->commands_map.insert(make_pair("function", new DefineFuncCommand()));
 
+  //Insert in hardcoded way 36 pairs of indexes and paths according to the generic_small.xml file.
   this->indexToSimPathMap.insert(make_pair(0, "instrumentation/airspeed-indicator/indicated-speed-kt"));
   this->indexToSimPathMap.insert(make_pair(1, "sim/time/warp"));
   this->indexToSimPathMap.insert(make_pair(2, "controls/switches/magnetos"));
@@ -140,6 +132,12 @@ void Parser::insert_to_symbol_table(string varName, float val, string path, bool
   this->interpret_tool->setVariables(varName + "=" + to_string(val));
   //delete var;
 }
+void Parser::insertParameterToSymbolTable(Variable *variable) {
+  this->symbol_table.insert(variable);
+  this->simPathToVarMap.insert(make_pair(variable->getSimulatorPath(), variable));
+  this->interpret_tool->setVariables(variable->getName() + "=" + to_string(variable->getValue()));
+  //delete var;
+}
 
 void Parser::updateValue(string varName, float newVal) {
   if (isExistsInSymbolTable(varName)) {
@@ -169,7 +167,22 @@ bool Parser::isExistsInSymbolTable(string key) {
 
 bool Parser::isBindingDirectionLeft(string varName) {
   return this->symbol_table.getVariable(varName)->getBindingDirection();
+}
+float Parser::getValueOfSymbol(string varName) {
+  return this->symbol_table.getVariable(varName)->getValue();
+}
+string Parser::getSimulatorPathByIndex(int index) {
+  return this->indexToSimPathMap[index];
+}
+string Parser::getSimulatorPathByVarName(string varName) {
 
+  return this->symbol_table.getVariable(varName)->getSimulatorPath();
+}
+bool Parser::getIsLocalVar(string varName) {
+  return this->symbol_table.getVariable(varName)->isLocalVariable();
+}
+void Parser::insertFuncCommandToCommandsMap(string funcName, Command *c) {
+  this->commands_map.insert(make_pair(funcName, c));
 }
 Parser::~Parser() {
   if (!commands_map.empty()) {

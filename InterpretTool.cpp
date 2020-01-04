@@ -1,6 +1,3 @@
-//
-// Created by amit on 05/11/2019.
-//
 
 #include <queue>
 #include <stack>
@@ -21,7 +18,7 @@ Expression *InterpretTool::interpretMathExpression(string expressionString) {
     throw "Invalid math expression.";
 
   // Wrap variables in the string with parens.
-  addParensAroundVars(expressionString);
+  //addParensAroundVars(expressionString);
 
   queue<tuple<string, bool>> outputQueue;
   //the operator and if it is an unary operator.
@@ -196,6 +193,10 @@ Expression *InterpretTool::interpretMathExpression(string expressionString) {
 
   return e;
 }
+/**
+ *
+ * @param expressionString
+ */
 void InterpretTool::addParensAroundVars(string &expressionString) const {
   vector<string> decresingOrderOfMapKeys;
   //create vector with the keys of the varMap.

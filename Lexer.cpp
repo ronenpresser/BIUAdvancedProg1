@@ -62,12 +62,12 @@ vector<string> Lexer::lexer(string filePath) {
 
       //change the param name to name of the form : funcName_paramName
 
-      string paramName = newFuncName + "_";
+
       string secondPartOfFuncDefining = tokens.at(1);
       //erase spaces
       toWithoutSpaces(secondPartOfFuncDefining);
       //3 for var.
-      paramName += secondPartOfFuncDefining.substr(3, secondPartOfFuncDefining.find_first_of(')') - 3);
+      string paramName = secondPartOfFuncDefining.substr(3, secondPartOfFuncDefining.find_first_of(')') - 3);
       tokensVector.push_back(paramName);
       tokensVector.push_back("{");
       unsigned int index = i + 1;
@@ -99,11 +99,12 @@ vector<string> Lexer::lexer(string filePath) {
       }
       tokensVector.push_back("}");
       i = index;
-    } else {
+    } else { //its a var assignment.
       string withoutSpaces = line;
       toWithoutSpaces(withoutSpaces);
       string lineToken;
       istringstream lineTokenStream(withoutSpaces);
+      //split the line by =
       while (getline(lineTokenStream, lineToken, '=')) {
         tokensVector.push_back(lineToken);
       }
@@ -135,6 +136,10 @@ void Lexer::addWhileOrIfTokensToVector(vector<string> &linesVector,
   unsigned int index = i + 1;
   while (index <= linesVector.size() && linesVector.at(index).find("}") == string::npos) {
     string innerLine = linesVector.at(index);
+    if (innerLine.empty()) {
+      index++;
+      continue;
+    }
 
     int startingIndex = 0;
     auto it = innerLine.begin();

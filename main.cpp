@@ -2,16 +2,6 @@
 
 #include "Lexer.h"
 #include "Parser.h"
-#include <fstream>
-#include <thread>
-#include <mutex>
-
-//mutex m;
-void sleep(int milliSeconds) {
-  //m.lock();
-  this_thread::sleep_for(chrono::milliseconds(milliSeconds));
-  //m.unlock();
-}
 
 int main(int argc, char const *argv[]) {
 

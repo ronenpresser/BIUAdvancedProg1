@@ -6,6 +6,7 @@
 #include <vector>
 #include <chrono>
 #include "InterpretTool.h"
+#include <unordered_map>
 using namespace std;
 
 class SymbolTable {
@@ -18,16 +19,21 @@ class SymbolTable {
   bool empty();
   bool count(string key);
   Variable *getVariable(string key);
+
+  friend class Parser;
 };
 
 class Command;
+class FuncCommand;
 class Parser {
  private:
   map<string, Command *> commands_map;
   SymbolTable symbol_table;
-  map<string, Variable *> simPathToVarMap; //TODO change to multimap
+  multimap<string, Variable *> simPathToVarMap; //TODO change to multimap
   map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
+  void eraseSymbolFromTableByName(string name);
+  void eraseParametersOfFunc(unordered_map<string, Variable *> parameters);
 
  public:
 
@@ -53,10 +59,11 @@ class Parser {
   string getSimulatorPathByVarName(string varName);
   bool getIsLocalVar(string varName);
   void updateValue(string varName, float newVal);
-  string getNameOfSymbolBySimulatorPath(string path);
+  vector<std::__cxx11::string> getNamesOfSymbolsBySimulatorPath(string path);
   virtual ~Parser();
   void insertFuncCommandToCommandsMap(string funcName, Command *c);
 
+  friend class FuncCommand;
 };
 
 #endif //BIUADVANCEDPROG1__PARSER_H_

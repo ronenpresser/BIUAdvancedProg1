@@ -34,11 +34,11 @@ void Parser::parse(vector<string> tokensVec) {
     token = tokensVec.at(index);
     Command *c;
     if (this->commands_map.count(token)) { // is a method command
-      Command *c = this->commands_map[token];
+      c = this->commands_map[token];
     } else if (this->symbol_table.count(token)) { // is a variable assignment
-      Command *c = this->commands_map["="];
+      c = this->commands_map["="];
     } else { // else its executing a new defined function
-      Command *c = this->commands_map["function"];
+      c = this->commands_map["function"];
     }
     index += c->execute(tokensVec, index, this);
   }
@@ -147,11 +147,21 @@ void Parser::updateValue(string varName, float newVal) {
   }
 }
 
-string Parser::getNameOfSymbolBySimulatorPath(string path) {
-  if (this->simPathToVarMap.count(path))
-    return this->simPathToVarMap[path]->getName();
-  else
-    return "";
+vector<string> Parser::getNamesOfSymbolsBySimulatorPath(string path) {
+  vector<string> names;
+  if (this->simPathToVarMap.count(path) && path != "") {
+    typedef multimap<string, Variable *>::iterator MMAPIterator;
+    std::pair<MMAPIterator, MMAPIterator> result = this->simPathToVarMap.equal_range(path);
+    for (MMAPIterator pair = result.first; pair != result.second; ++pair) {
+      if (pair->first == path)
+        names.push_back(pair->second->getName());
+      else
+        break;
+    }
+
+    return names;
+  } else
+    return names;
 }
 
 Command *Parser::getCommand(string key) {
@@ -183,6 +193,26 @@ bool Parser::getIsLocalVar(string varName) {
 }
 void Parser::insertFuncCommandToCommandsMap(string funcName, Command *c) {
   this->commands_map.insert(make_pair(funcName, c));
+}
+void Parser::eraseSymbolFromTableByName(string name) {
+  if (this->symbol_table.count(name)) {
+    this->symbol_table.symbol_map.erase(name);
+  }
+  typedef multimap<string, Variable *>::iterator MMAPIterator;
+  std::pair<MMAPIterator, MMAPIterator> result = this->simPathToVarMap.equal_range("");
+  for (MMAPIterator pair = result.first; pair != result.second; ++pair) {
+    if ((*pair).second->getName() == name) {
+      this->simPathToVarMap.erase(pair);
+      break;
+    }
+  }
+
+  this->interpret_tool->eraseFromVarMap(name);
+}
+void Parser::eraseParametersOfFunc(unordered_map<string, Variable *> parameters) {
+  for (auto pair : parameters) {
+    eraseSymbolFromTableByName(pair.first);
+  }
 }
 Parser::~Parser() {
   if (!commands_map.empty()) {

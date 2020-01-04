@@ -24,7 +24,10 @@ class Lexer {
   void toLowerCase(string &lowerCaseLine) const;
   void toWithoutSpaces(string &withoutSpaces) const;
   bool isVarDefineCommand(const string &line) const;
-  void addWhileOrIfTokensToVector(vector<string> &linesVector, string &line, vector<string> &tokensVector, unsigned int &i) const;
+  void addWhileOrIfTokensToVector(vector<string> &linesVector,
+                                  string &line,
+                                  vector<string> &tokensVector,
+                                  unsigned int &i) const;
 };
 
 #endif //BIUADVANCEDPROG1__LEXER_H_

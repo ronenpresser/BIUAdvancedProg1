@@ -165,7 +165,6 @@ class FuncCommand : public Command {
       this->parameters.clear();
     }
   }
-
   friend class DefineFuncCommand;
 
 };

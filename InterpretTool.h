@@ -73,7 +73,7 @@ class Variable : public Expression {
                                                                                                     bindingDir),
                                                                                                 isLocalVar(
                                                                                                     isLocalVariable) {
-    if(!isLocalVariable) {
+    if (!isLocalVariable) {
       if (path.at(0) == '/') {
         this->simulatorPath = path.substr(1, path.length() - 1);
       } else { simulatorPath = path; }
@@ -115,6 +115,10 @@ class InterpretTool {
   }
   Expression *interpretBoolExpression(string expressionString);
   void addParensAroundVars(string &expressionString) const;
+  void eraseFromVarMap(string varName) {
+    if (this->varMap.count(varName))
+      this->varMap.erase(varName);
+  }
 };
 
 class UnaryOperator : public Expression {

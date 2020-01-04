@@ -27,10 +27,13 @@ bool clientDisconnected = false;
 void updateValuesOfSymbols(Parser &pars) {
   try {
     for (auto pair : simulatorValues) {
-      if (pars.getNameOfSymbolBySimulatorPath(pair.first) != "") {
-        string name = pars.getNameOfSymbolBySimulatorPath(pair.first);
-        if (pars.isBindingDirectionLeft(name)) {
-          pars.updateValue(name, pair.second);
+      string path = pair.first;
+      vector<string> names = pars.getNamesOfSymbolsBySimulatorPath(path);
+      if (!names.empty()) {
+        for (string name:names) {
+          if (pars.isBindingDirectionLeft(name)) {
+            pars.updateValue(name, pair.second);
+          }
         }
       }
     }
@@ -185,24 +188,15 @@ int ConnectCommand::execute(vector<string> &tokensVec, int currIndex, Parser *pa
   clientDisconnected = true;
   return 3;
 }
-void sleepFunc(int sleepParam) {
-  m.lock();
-  this_thread::sleep_for(chrono::milliseconds(sleepParam));
-  m.unlock();
-}
+
 int SleepCommand::execute(vector<string> &tokensVector, int currentIndex, Parser *parser) {
   string sleepParameterToken = tokensVector.at(currentIndex + 1);
   InterpretTool *i = parser->getInterpreter();
   int sleepParameter = i->interpretMathExpression(sleepParameterToken)->calculate();
-  //int sleepParameter = stoi(sleepParameterToken);
   m.lock();
   this_thread::sleep_for(chrono::milliseconds(sleepParameter));
   m.unlock();
-//  thread sleepThread(sleepFunc, sleepParameter);
-//  sleepThread.join();
-
   return SleepCommand::STEPS;
-
 }
 
 int IfCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
@@ -228,7 +222,9 @@ int LoopCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parse
     for (Command *c : commands) index += c->execute(tokensVec, index, parser);
     index = currIndex + 3;
     expIsTrue = isConditionTrue(tokensVec.at(currIndex + 1), *parser);
+
   }
+
   for (Command *c : commands) steps += c->getSteps();
   if (steps + 1 + currIndex >= tokensVec.size()) done = true;
   return steps + 1;
@@ -323,43 +319,30 @@ int VarAssignmentCommand::execute(vector<string> &tokensVec, int currIndex, Pars
 }
 int DefineFuncCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
 
-  string functionName = tokensVec.at(currIndex);//takeoff
-  string parameterName = tokensVec.at(currIndex + 1);//takeoff_x
+  string functionName = tokensVec.at(currIndex);
+  string parameterName = tokensVec.at(currIndex + 1);
   FuncCommand *func_command = new FuncCommand();
   Variable *param = new Variable(parameterName, 0, "", false, true);
   func_command->parameters.insert(make_pair(parameterName, param));
   parser->insertParameterToSymbolTable(param);
-  int loopIndex = currIndex + 2;
+  int loopIndex = currIndex + 3;
   while (tokensVec.at(loopIndex) != "}") {
     string token = tokensVec.at(loopIndex);
     string lowerCaseLine = token;
     transform(lowerCaseLine.begin(), lowerCaseLine.end(), lowerCaseLine.begin(), ::tolower);
     if (parser->isExistsInCommandsMap(token)) {
       Command *c = parser->getCommand(token);
-      func_command->inner_commands.push_back(c);
-      if (lowerCaseLine == "print" || lowerCaseLine == "sleep")
+      if (lowerCaseLine == "print" || lowerCaseLine == "sleep") {
+        func_command->inner_commands.push_back(c);
         loopIndex += c->getSteps();
-      if (lowerCaseLine == "while" || lowerCaseLine == "if") {
-        loopIndex += c->getSteps();
-        while (tokensVec.at(loopIndex) != "}") {
-          string token = tokensVec.at(loopIndex);
-          string lowerCaseLine = token;
-          transform(lowerCaseLine.begin(),
-                    lowerCaseLine.end(),
-                    lowerCaseLine.begin(),
-                    ::tolower);
-          if (parser->isExistsInCommandsMap(token)) {
-            Command *c = parser->getCommand(token);
-            func_command->inner_commands.push_back(c);
-            if (lowerCaseLine == "print" || lowerCaseLine == "sleep")
-              loopIndex += c->getSteps();
-          } else if (parser->isExistsInSymbolTable(token)) {
-            Command *c = parser->getCommand("=");
-            func_command->inner_commands.push_back(c);
-            loopIndex += 2;
-          }
-        }
-        loopIndex + 1;
+      } else if (lowerCaseLine == "while" || lowerCaseLine == "if") {
+        ConditionParser *condition_parser = (ConditionParser *) c;
+        loopIndex += 3;
+        condition_parser->buildCommandsVector(tokensVec, parser, loopIndex);
+        func_command->inner_commands.push_back(condition_parser);
+        auto v = condition_parser->getInnerCommands();
+        for (auto c : v) loopIndex += c->getSteps();
+        ++loopIndex;//for the closing } of the if or while loop.
       }
     } else if (parser->isExistsInSymbolTable(token)) {
       Command *c = parser->getCommand("=");
@@ -375,11 +358,15 @@ int DefineFuncCommand::execute(vector<string> &tokensVec, int currIndex, Parser 
 }
 int FuncCommand::execute(vector<string> &tokensVec, int currIndex, Parser *parser) {
   float value = stof(tokensVec.at(currIndex + 1));
-  this->parameters.at(0)->setValue(value);
+  for (auto p : this->parameters) {//TODO here can be supported for multiple args
+    parser->updateValue(p.first, value);
+  }
   int index = this->startingIndex;
   for (Command *c : inner_commands) {
     index = index + c->execute(tokensVec, index, parser);
   }
+
+  parser->eraseParametersOfFunc(parameters);
   return 1 + this->parameters.size();
 }
 void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index) {
@@ -406,9 +393,12 @@ void ConditionParser::buildCommandsVector(vector<string> &tokensVec, Parser *par
 }
 bool ConditionParser::isConditionTrue(string conditionString, Parser &pars) {
   updateValuesOfSymbols(pars);
-  Expression *e = pars.getInterpreter()->interpretBoolExpression(conditionString);
+  InterpretTool *i = pars.getInterpreter();
+  Expression *e = i->interpretBoolExpression(conditionString);
   int result = e->calculate();
-  return result == 1 ? true : false;
+  if (result == 0)
+
+    return result == 1 ? true : false;
 }
 
 void ConditionParser::insert_to_inner_commands(Command *c) {

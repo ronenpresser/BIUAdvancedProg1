@@ -22,26 +22,8 @@ Give examples
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
 
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-
-
-
-## Possible changes / improvments
+### Possible changes / improvments
 
 * Implementing Singleton DP on The SymbolTable and the InterpreterTool members of the Parser,
   as well the Parser itself.

@@ -43,6 +43,13 @@ End with an example of getting some data out of the system or using it for a lit
 
 ## Possible changes / improvments
 
+* Implementing Singleton DP on The SymbolTable and the InterpreterTool members of the Parser,
+  as well the Parser itself.
+* Improve the FuncCommand and DefineFuncCommand to support multiple parameters of a function.
 
+
+
+
+# Part #2
 
 

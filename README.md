@@ -9,18 +9,9 @@ This project is an assignment as a part of a course called Advanced Programming 
 ## Part #1
 In this first milestone of the project, we'll make a code parser that will remote control on a FlightGear simulator.
 
-### Getting Started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+### Getting Started and Prerequisites
 
-### Prerequisites
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
-
-### How does it work
-
+### General explanations on the code parser - how does it work
 
 ### Possible changes / improvments
 
@@ -32,5 +23,5 @@ Give examples
 
 
 # Part #2
-
+In this second milestone of the project, we'll
 

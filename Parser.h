@@ -29,7 +29,7 @@ class Parser {
  private:
   map<string, Command *> commands_map;
   SymbolTable symbol_table;
-  multimap<string, Variable *> simPathToVarMap; //TODO change to multimap
+  multimap<string, Variable *> simPathToVarMap;
   map<int, string> indexToSimPathMap;
   InterpretTool *interpret_tool;
   void eraseSymbolFromTableByName(string name);
@@ -39,6 +39,8 @@ class Parser {
 
   bool canProceedParsing;
   bool shouldStopParsing;
+  void buildMaps();
+
   Parser() {
     buildMaps();
     interpret_tool = new InterpretTool();
@@ -46,9 +48,8 @@ class Parser {
     shouldStopParsing = false;
   }
   void parse(vector<string> tokensVector);
-  void buildMaps();
   InterpretTool *getInterpreter();
-  void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection, bool isVarAssignment);
+  void insert_to_symbol_table(string varName, float val, string path, bool bindingDirection, bool isLocalVariable);
   void insertParameterToSymbolTable(Variable *variable);
   Command *getCommand(string key);
   bool isExistsInCommandsMap(string key);
@@ -60,8 +61,9 @@ class Parser {
   bool getIsLocalVar(string varName);
   void updateValue(string varName, float newVal);
   vector<std::__cxx11::string> getNamesOfSymbolsBySimulatorPath(string path);
-  virtual ~Parser();
   void insertFuncCommandToCommandsMap(string funcName, Command *c);
+
+  virtual ~Parser();
 
   friend class FuncCommand;
 };

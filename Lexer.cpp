@@ -22,7 +22,7 @@ vector<string> Lexer::lexer(string filePath) {
   }
 
   //regex r("^[A-Za-z]+\\(");
-
+  if (linesVector.empty()) throw "The given file is empty.";
   unsigned int i = 0;
   for (i = 0; i < linesNum; i++) {
 
@@ -32,13 +32,11 @@ vector<string> Lexer::lexer(string filePath) {
     withoutSpaces.erase(std::remove(withoutSpaces.begin(),
                                     withoutSpaces.end(), '\t'), withoutSpaces.end());
     if (withoutSpaces.empty()) continue;
-    //bool isMethod = regex_match(line, r);
     bool isCommand = isCommandMethod(line);
     bool isFuncDefining = isFuncDefiningCommand(line);
     bool isWhileOrIf = isWhileOrConditionCommand(line);
     bool isVarCommand = isVarDefineCommand(line);
-    //var lines
-    if (isVarCommand) {
+    if (isVarCommand) { //var lines
       addVarTokensToVector(line, tokensVector);
     } else if (isCommand) { //Method lines
       addMethodTokensToVector(line, tokensVector);
@@ -48,13 +46,13 @@ vector<string> Lexer::lexer(string filePath) {
       vector<std::string> tokens;
       string token;
       istringstream tokenStream(line);
-      //separate by (.
+      //separate by ( .
       while (getline(tokenStream, token, '(')) {
         tokens.push_back(token);
       }
+      //Add the new function name to the funcNames vector and the tokensVector
       string newFuncName = tokens.at(0);
-      //erase spaces
-      toWithoutSpaces(newFuncName);
+      //toWithoutSpaces(newFuncName);
       tokensVector.push_back(newFuncName);
       funcNames.push_back(newFuncName);
 
@@ -82,14 +80,15 @@ vector<string> Lexer::lexer(string filePath) {
                                     innerLine.end(), '\t'), innerLine.end());
 
         if (innerLine.empty()) continue;
-        vector<std::string> innerLinesTokens;
-        string innerLineToken;
-        istringstream innerTokenStream(innerLine);
+
         if (isCommandMethod(innerLine)) { // if its a Command method(print,sleep..)
           addMethodTokensToVector(innerLine, tokensVector);
         } else if (isWhileOrConditionCommand(innerLine)) { // if its a while or if
           addWhileOrIfTokensToVector(linesVector, innerLine, tokensVector, index);
         } else { //if its a var assignment
+          vector<std::string> innerLinesTokens;
+          string innerLineToken;
+          istringstream innerTokenStream(innerLine);
           toWithoutSpaces(innerLine);
           while (getline(innerTokenStream, innerLineToken, '=')) { // separate by =
             tokensVector.push_back(innerLineToken);
@@ -97,6 +96,7 @@ vector<string> Lexer::lexer(string filePath) {
         }
         index++;
       }
+      //finally push the closing }
       tokensVector.push_back("}");
       i = index;
     } else { //its a var assignment.
@@ -175,10 +175,22 @@ void Lexer::addWhileOrIfTokensToVector(vector<string> &linesVector,
   i = index;
 
 }
+/**
+ * Removes all spaces from a given string.
+ *
+ * @param withoutSpaces given string to remove the spaces.
+ */
 void Lexer::toWithoutSpaces(string &withoutSpaces) const {
+
   withoutSpaces.erase(remove(withoutSpaces.begin(),
                              withoutSpaces.end(), ' '), withoutSpaces.end());
 }
+
+/**
+ * Checks if the given line is a line that represents a while loop of if condition.
+ * @param line The line to check while or if.
+ * @return result of checking.
+ */
 bool Lexer::isWhileOrConditionCommand(const string &line) const {
   return ((line.find("while") != string::npos
       || line.find("if") != string::npos)
@@ -189,22 +201,42 @@ bool Lexer::isWhileOrConditionCommand(const string &line) const {
           || line.find("==") != string::npos
           || line.find("!=") != string::npos));
 }
+/**
+ * Checks a given line if it represents a new function defining.
+ *
+ * @param line The line to check.
+ * @return result of checking.
+ */
 bool Lexer::isFuncDefiningCommand(const string &line) const {
   return line.find('{') != string::npos && line.find("(") != string::npos
       && line.find(")") != string::npos;
 }
-
+/**
+ * Checks a given line if it represents a new var defining.
+ *
+ * @param line The line to check.
+ * @return result of checking.
+ */
 bool Lexer::isVarDefineCommand(const string &line) const {
-  return line.find("var") != string::npos
+  return line.find("var ") != string::npos
       && (line.find("<-") != string::npos || line.find("->") != string::npos || line.find("=") != string::npos);
 }
+
+/**
+ * Checks a given line if it represents a an execution of command method.
+ *
+ * @param line The line to check.
+ * @return result of checking.
+ */
 bool Lexer::isCommandMethod(const string &line) const {
   string lowerCase = line;
   toLowerCase(lowerCase);
+  //Has a known command name.
   bool isMethod = lowerCase.find("print(") != string::npos
       || lowerCase.find("sleep(") != string::npos
       || lowerCase.find("connectcontrolclient(") != string::npos
       || lowerCase.find("opendataserver(") != string::npos;
+  //Or a new function that has been defined.
   bool isNewExecutingFunc;
   for (string s : funcNames) {
     string func = s + "(";
@@ -215,12 +247,22 @@ bool Lexer::isCommandMethod(const string &line) const {
   }
   return isMethod || isNewExecutingFunc;
 }
+
+/**
+ * Transforms a line to lowercase.
+ * @param lowerCaseLine The line to transform.
+ */
 void Lexer::toLowerCase(string &lowerCaseLine) const {
   transform(lowerCaseLine.begin(),
             lowerCaseLine.end(),
             lowerCaseLine.begin(),
             ::tolower);
-}
+}/**
+ * Addes tokens of the command method.
+ *
+ * @param line The line to lex to method tokens.
+ * @param tokensVector The tokens vector.
+ */
 void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVector) const {
   //first separate by (
   vector<string> tokens;
@@ -232,7 +274,8 @@ void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVe
   //the first token is the name of the method command.
   tokensVector.push_back(tokens.at(0));
 
-  if (tokens.at(1).find(",") != string::npos) {  //has more than one parameters
+  if (tokens.at(1).find(",") != string::npos) {
+    //has more than one parameters, separate by comma the string between parens.
     string parameters = tokens.at(1);
     parameters.erase(std::remove(parameters.begin(),
                                  parameters.end(), ')'), parameters.end());
@@ -246,10 +289,17 @@ void Lexer::addMethodTokensToVector(const string &line, vector<string> &tokensVe
     tokensVector.push_back(tokens.at(1).substr(0, tokens.at(1).length() - 1));
   }
 }
+/**
+ * Adds tokens of var defining.
+ *
+ * @param line The line to lex to var defining tokens.
+ * @param tokensVector The vector to add the tokens to.
+ */
 void Lexer::addVarTokensToVector(const string &line, vector<string> &tokensVector) const {
   vector<string> tokens;
   string token;
   istringstream tokenStream(line);
+  //Separate by spaces.
   while (getline(tokenStream, token, ' ')) {
     if (token.find("sim") != string::npos) {
       //tokensVector.push_back("sim");

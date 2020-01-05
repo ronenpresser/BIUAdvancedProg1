@@ -21,7 +21,20 @@ class Parser;
 
 class Command {
  public:
+  /**
+ *
+ * Executes the VarAssignmentCommand.
+ *
+ * @param tokensVec Vector of tokens for the specific command to take its parameters/parts
+ * @param currIndex Current index in the interating on the vector of tokens.
+ * @param pars The parser to use functions(accessing data sturctues etc) from it as needed.
+ * @return Steps number to skip to the next command token.
+ */
   virtual int execute(vector<string> &, int, Parser *) = 0;
+  /**
+   * Returns The basic steps number  to skip that is a const number of the execute function of the command.
+   * @return The basic steps number  to skip that is a const number of the execute function of the command.
+   */
   virtual int getSteps() = 0;
   virtual ~Command() {}
 };
@@ -62,15 +75,14 @@ class ConditionParser : public Command {
   vector<Command *> inner_commands;
  public:
   virtual int execute(vector<string> &tokensVector, int currentIndex, Parser *pars) = 0;
+  virtual int getSteps() = 0;
 
   bool isConditionTrue(string conditionString, Parser &pars);
-
   void insert_to_inner_commands(Command *c);
 
   vector<Command *> getInnerCommands();
 
   void buildCommandsVector(vector<string> &tokensVec, Parser *parser, int index);
-  virtual int getSteps() = 0;
 
   virtual ~ConditionParser() {
     if (!inner_commands.empty())

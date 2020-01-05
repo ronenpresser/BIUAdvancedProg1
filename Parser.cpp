@@ -4,11 +4,24 @@
 #include "Parser.h"
 #include "Command.h"
 
+/**
+ * A func for a thread of executing commands.
+ *
+ * @param c The command.
+ * @param tokensVec The tokens vector.
+ * @param currIndex Current index.
+ * @param parser Parser.
+ */
 void executeCommandFunc(Command *c, vector<string> tokensVec, int currIndex, Parser *parser) {
   c->execute(tokensVec, currIndex, parser);
 }
+/**
+ * Parsing the given tokens vector fromt he lexer into executing commands.
+ *
+ * @param tokensVec The vector to pars.
+ */
 void Parser::parse(vector<string> tokensVec) {
-
+  //TODO
 //  string lowerCaseLine = tokensVec.at(index);
 //  transform(lowerCaseLine.begin(),
 //            lowerCaseLine.end(),
@@ -32,7 +45,7 @@ void Parser::parse(vector<string> tokensVec) {
   //Proceed parsing.
   while (index < tokensVec.size() && !this->shouldStopParsing) {
     token = tokensVec.at(index);
-    Command *c;
+    Command *c = nullptr;
     if (this->commands_map.count(token)) { // is a method command
       c = this->commands_map[token];
     } else if (this->symbol_table.count(token)) { // is a variable assignment
@@ -45,8 +58,12 @@ void Parser::parse(vector<string> tokensVec) {
   //Now wait for the threads to end.
   openServer.join();
   connectClient.join();
+
 }
 
+/**
+ * Build maps of the Parser : commands map and the indexToSimulatorPathMap
+ */
 void Parser::buildMaps() {
   //Insert known commands to the commands_map;
   this->commands_map.insert(make_pair("openDataServer", new OpenServerCommand()));
@@ -99,46 +116,102 @@ void Parser::buildMaps() {
 
 }
 
+/**
+ * Sets a new value to a var by a given name.
+ * @param varName The wanted var name.
+ * @param value The new value.
+ */
 void SymbolTable::setValue(string varName, float value) {
   Variable *var = symbol_map[varName];
   if (var != nullptr)
     var->setValue(value);
 }
+/**
+ * Inserts a new var to the SymbolTable.
+ *
+ * @param var The new var to insert.
+ */
 void SymbolTable::insert(Variable *var) {
-
   this->symbol_map.insert(make_pair(var->getName(), var));
 }
+
+/**
+ * Clears the SymbolTable
+ *
+ */
 void SymbolTable::clear() {
   this->symbol_map.clear();
 }
+/**
+ *
+ *
+ * @return True if the SymbolTable is empty.
+ */
 bool SymbolTable::empty() {
   return this->symbol_map.empty();
 }
+
+/**
+ * Gets a variable by a given key.
+ * @param key Name of the variable.
+ * @return Variable pointer.
+ */
 Variable *SymbolTable::getVariable(string key) {
   Variable *var = this->symbol_map[key];
   return var;
 }
+/**
+ * Returns if a given key exists in the symbol table.
+ * @param key Var name.
+ * @return True if a given key exists in the symbol table.
+ */
 bool SymbolTable::count(string key) {
   return this->symbol_map.count(key);
 }
-InterpretTool *Parser::getInterpreter() {
+
+/**
+ * Returns the interpreter of the parser.
+ * @return Interpreter of the parser.
+ */
+InterpretTool *Parser::getInterpreter() {//TODO change to singleton.
   return interpret_tool;
 }
 
-void Parser::insert_to_symbol_table(string varName, float val, string path, bool bindingDirec, bool isVarAssgin) {
-  Variable *var = new Variable(varName, val, path, bindingDirec, isVarAssgin);
+/**
+ * Inserting to the SymbolTable a new Var.
+ * @param varName  Var name.
+ * @param val Value.
+ * @param path Simulator path, if its a local or a parameter it needs to be empty string.
+ * @param bindingDirec Direction of the arrow -binding.
+ * @param isLocalVariable If its a local var.
+ */
+void Parser::insert_to_symbol_table(string varName, float val, string path, bool bindingDirec, bool isLocalVariable) {
+  Variable *var = new Variable(varName, val, path, bindingDirec, isLocalVariable);
   this->symbol_table.insert(var);
   this->simPathToVarMap.insert(make_pair(var->getSimulatorPath(), var));
   this->interpret_tool->setVariables(varName + "=" + to_string(val));
   //delete var;
 }
+/**
+ *
+ * Inserting a new paramter to the symbolTable.
+ *
+ * @param variable The parameter to insert.
+ */
 void Parser::insertParameterToSymbolTable(Variable *variable) {
   this->symbol_table.insert(variable);
-  this->simPathToVarMap.insert(make_pair(variable->getSimulatorPath(), variable));
+  //this->simPathToVarMap.insert(make_pair(variable->getSimulatorPath(), variable));
   this->interpret_tool->setVariables(variable->getName() + "=" + to_string(variable->getValue()));
   //delete var;
 }
 
+/**
+ * Update value of var by a given name.
+ *
+ *
+ * @param varName Var name.
+ * @param newVal New value of the var.
+ */
 void Parser::updateValue(string varName, float newVal) {
   if (isExistsInSymbolTable(varName)) {
     this->symbol_table.setValue(varName, newVal);
@@ -146,14 +219,21 @@ void Parser::updateValue(string varName, float newVal) {
     this->interpret_tool->setVariables(varName + "=" + sVal);
   }
 }
-
+/**
+ * Returns vector of name of vars by given path.
+ *
+ * @param path Path of the vars.
+ * @return Vector of names of vars.
+ */
 vector<string> Parser::getNamesOfSymbolsBySimulatorPath(string path) {
   vector<string> names;
   if (this->simPathToVarMap.count(path) && path != "") {
+    //Iterate over the simpathtovarmap starting from the first pair matched to the path.
     typedef multimap<string, Variable *>::iterator MMAPIterator;
     std::pair<MMAPIterator, MMAPIterator> result = this->simPathToVarMap.equal_range(path);
     for (MMAPIterator pair = result.first; pair != result.second; ++pair) {
       if (pair->first == path)
+        //add the name to the vector.
         names.push_back(pair->second->getName());
       else
         break;
@@ -163,57 +243,127 @@ vector<string> Parser::getNamesOfSymbolsBySimulatorPath(string path) {
   } else
     return names;
 }
-
+/**
+ * returns the command by a given key.
+ * @param key Key of the command.
+ * @return Command object.
+ */
 Command *Parser::getCommand(string key) {
   return commands_map[key];
 }
+/**
+ * Returns true if the key exists in the commands map.
+ *
+ * @param key Key to check.
+ * @return True if the key exists in the commands map.
+ */
 bool Parser::isExistsInCommandsMap(string key) {
   return commands_map.count(key);
 }
 
+/**
+ * Checks if the key exists in the symbol table.
+ *
+ * @param key Key to check.
+ * @return True if exists.
+ */
 bool Parser::isExistsInSymbolTable(string key) {
   return symbol_table.count(key);
 }
-
+/**
+ * Returns true if the binding direction is left of a var.
+ *
+ * @param varName Var name.
+ * @return true if direction is left.
+ */
 bool Parser::isBindingDirectionLeft(string varName) {
   return this->symbol_table.getVariable(varName)->getBindingDirection();
 }
+/**
+ *
+ * Returns a value of symbol.
+ *
+ * @param varName Symbol name.
+ * @return Value of symbol.
+ */
 float Parser::getValueOfSymbol(string varName) {
   return this->symbol_table.getVariable(varName)->getValue();
 }
+
+/**
+ * Return simulator path by index.
+ *
+ * @param index Index of the path.
+ * @return The matched path to the index from the indexToSimPathMap.
+ */
 string Parser::getSimulatorPathByIndex(int index) {
   return this->indexToSimPathMap[index];
 }
+/**
+ * Return simulator path by varName.
+ *
+ * @param varName Var name matched to the path..
+ * @return The matched path to the index from the indexToSimPathMap.
+ */
 string Parser::getSimulatorPathByVarName(string varName) {
 
   return this->symbol_table.getVariable(varName)->getSimulatorPath();
 }
+/**
+ *
+ * Returns true if the Variable matched to the varName is local.
+ *
+ * @param varName  Variable name.
+ * @return true is the var is local.
+ */
 bool Parser::getIsLocalVar(string varName) {
   return this->symbol_table.getVariable(varName)->isLocalVariable();
 }
+/**
+ * Inserts a new func command the commands map.
+ * @param funcName New function name as its key.
+ * @param c The command.
+ */
 void Parser::insertFuncCommandToCommandsMap(string funcName, Command *c) {
   this->commands_map.insert(make_pair(funcName, c));
 }
+/**
+ * Erases symbol from the symbol table my name.
+ *
+ * @param name of the symbol to erase.
+ */
 void Parser::eraseSymbolFromTableByName(string name) {
+  //First erase from the symbol table.
   if (this->symbol_table.count(name)) {
     this->symbol_table.symbol_map.erase(name);
   }
-  typedef multimap<string, Variable *>::iterator MMAPIterator;
-  std::pair<MMAPIterator, MMAPIterator> result = this->simPathToVarMap.equal_range("");
-  for (MMAPIterator pair = result.first; pair != result.second; ++pair) {
-    if ((*pair).second->getName() == name) {
-      this->simPathToVarMap.erase(pair);
-      break;
-    }
-  }
-
+//  //Then iterate on the multimap  simPathToVarMAp and erase the wanted pair.
+//  typedef multimap<string, Variable *>::iterator MMAPIterator;
+//  std::pair<MMAPIterator, MMAPIterator> result = this->simPathToVarMap.equal_range("");
+//  for (MMAPIterator pair = result.first; pair != result.second; ++pair) {
+//    if ((*pair).second->getName() == name) {
+//      this->simPathToVarMap.erase(pair);
+//      break;
+//    }
+//  }
+  //Then erase from the var map.
   this->interpret_tool->eraseFromVarMap(name);
 }
+/**
+ *
+ * Erasing parameters of function.
+ *
+ * @param parameters parameters of function.
+ */
 void Parser::eraseParametersOfFunc(unordered_map<string, Variable *> parameters) {
   for (auto pair : parameters) {
     eraseSymbolFromTableByName(pair.first);
   }
 }
+/**
+ * Destructor of Parser/
+ *
+ */
 Parser::~Parser() {
   if (!commands_map.empty()) {
     commands_map.clear();

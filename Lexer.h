@@ -12,10 +12,7 @@
 
 using namespace std;
 class Lexer {
-
- public:
-  vector<string> lexer(string filePath);
-
+ private:
   void addVarTokensToVector(const string &line, std::vector<string> &tokensVector) const;
   void addMethodTokensToVector(const string &line, vector<string> &tokensVector) const;
   bool isCommandMethod(const string &line) const;
@@ -28,6 +25,10 @@ class Lexer {
                                   string &line,
                                   vector<string> &tokensVector,
                                   unsigned int &i) const;
+ public:
+  vector<string> lexer(string filePath);
+
+
 };
 
 #endif //BIUADVANCEDPROG1__LEXER_H_

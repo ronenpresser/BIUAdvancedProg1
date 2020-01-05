@@ -256,7 +256,7 @@ Expression *InterpretTool::interpretBoolExpression(string expressionString) {
 
   if (expressionString == "" || (count(expressionString.begin(), expressionString.end(), '(')
       != count(expressionString.begin(), expressionString.end(), ')')))
-    throw "Invalid math expression.";
+    throw "Invalid boolean expression.";
   string booleanOperator;
 
   if (expressionString.find("==") != string::npos) {
@@ -327,18 +327,12 @@ void InterpretTool::setVariables(string expressionString) {
     try {
       bool r1 = regex_match(innerTokens.at(0), validVariablePattern);
       bool r2 = regex_match(innerTokens.at(1), validNumberPattern);
-      //bool r3 = regex_match(innerTokens.at(1), validVariablePattern);
-//      if(!r1 || !r2){
-//        if(!r1) throw "illegal variable assignment at regex match!";
-//        if(!r2){
-//          if(!r3)"illegal variable assignment at regex match!";
-//        }
-//      }
+
       if (!r1 || !r2) {
         throw "illegal variable assignment at regex match!";
       }
 
-      float value = stof(innerTokens.at(1)); //interpretMathExpression(innerTokens.at(1))->calculate();
+      float value = stof(innerTokens.at(1));
 
       bool empty = this->varMap.empty();
       pair<string, double> p = make_pair(innerTokens.at(0), value);

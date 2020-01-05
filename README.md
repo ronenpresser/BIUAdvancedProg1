@@ -3,24 +3,23 @@
 link :
 https://github.com/ronenpresser/BIUAdvancedProg1
 
+## Background on the project
+This project is an assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University.
+
 ## Part #1
+In this first milestone of the project, we'll make a code parser that will remote control on a FlightGear simulator.
 
-### Backgorund on the project
-
-I
 ### Getting Started
-
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
-
 What things you need to install the software and how to install them
 
 ```
 Give examples
 ```
 
-### Installing
+### How does it work
 
 
 ### Possible changes / improvments

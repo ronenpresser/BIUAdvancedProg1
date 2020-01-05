@@ -4,7 +4,7 @@ link :
 https://github.com/ronenpresser/BIUAdvancedProg1
 
 ## Background on the project
-This project is an assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University.
+This project is an assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++.
 
 ## Part #1
 In this first milestone of the project, we'll make a code parser that will remote control a plane in a FlightGear simulator.
@@ -30,7 +30,26 @@ Each line in the txt file contains a command that is needed to be executed and d
 #### The parser part: Class Parser 
 func parse(vector<string> tokensVector)
 The goal of the parsing part is to parse - to take the tokens vector from the lexer, iterate over it and execute the matched commands by a current token.
-There are 10 commands (classes) that can be executed, all inherits a the Command class that has only one function - execute.
+On creation, 2 maps of the parser will be built in a hard coded way:
+  1.command_map:
+    The keys are names of usable commands and the values are Command objects
+  2.indexToSimulatorPathMap:
+    The keys are numbers from 0 to 35 and the values are strings that are paths of the simulator - taken from the generic_small.xml
+    file that the simulator samples from and sends it 10 times very seconds.
+The parser class has 5 main members:
+* command_map: 
+  A map of strings as keys(names of commands)and Commands as value. will be used on the parsing part, well send a token to get a wanted     Command to execute.
+* symbol_table:
+  An object of SymbolTable class that contains a map of strings as keys - variables names and Variable pointers as values.
+* simPathToVarMap:
+  a map of string - simulator paths as keys and Variable pointers as value.
+* indexToSimPathMap:
+  as written before, will be used to identify the values that we read from the simulator to update the matched Variables values.
+* interpret_tool - object of the class InterpretTool. The class is a tool for interpreting arithetic expressions that contain
+  variable names, number, arithmetic operators (* + - /) ,boolean operators (< > <= >= != ==) and parenthisess to an Expression
+  object recoursivly that can be calculated.
+  
+There are 10 commands (classes) that can be executed, all inherits the Command class that has only one function - execute.
 The execute function returns a int number, that represents the steps that the parser need to skip in the tokens vector, to get to the next token of command.
 This function gets 3 parameters:The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
@@ -45,9 +64,17 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
 * DefiningFuncCommand:
 * FuncCommand:
 
+So, first we want to open a server at a given port ,and wait for the simulator to connect as a client. Using the OpenServerCommand,
+we initialize a thread of executing the OpenServerCommand, so the server that we open will always run in the background.
+The simulator sends 10 times in a second 36 value separated by commas(The simulator used the generic_small.xml file from previous topic), and once the simulator connects, we'll initialize a thread that start reading the values and updating the matched values in the matched indexes bt separating each line of 36 values. 
+In the meantime, we initialize a thread of ConnectCommand that connects us as a clinet (by a given IP and a port) to the simulator that will be used as our server and that thread will be always running so we can send a request to set a new value to a simulator path.
 
+In this project the local host is the server and the client.
 
+After those, we can continue iterating over the tokens vector and indetify wanted command by sending the tokensVector.at(index)
+to the command map.
 
+Once we get to part of executing the PrintCommand with the string "done" the program will finish.
 
 ### Possible changes / improvments
 

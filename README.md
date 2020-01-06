@@ -69,7 +69,8 @@ If you want to make your own ```fly.txt``` file, your are welcome to do so. In t
 conventions.
 
 7.The program is waiting for a client to connect to a server that we will open, so we need to enter the simulator so it can connect.
-Click on the "Fly!" button in the flightgear simulator and watch the plane fly.
+Click on the "Fly!" button in the flightgear simulator and watch the plane fly. On the terminal you'll see progress and
+printing.
 
 
 ### General explanations on the code parser - how does it work
@@ -83,8 +84,6 @@ There are 2 main parts:
 func lexer(string filePath)
 The goal of the lexing part is to make a vector of tokens made of a given txt file with the code that will fly the plane.
 Each line in the txt file contains a command that is needed to be executed and dividing each line to those tokens will help us determine which commands we need to execute in the next part.This class has only one function: lexer
-
-
 
 
 ```main.cpp``` :
@@ -119,27 +118,44 @@ The execute function returns a int number, that represents the steps that the pa
 This function gets 3 parameters: The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
 Conventions for the txt file:
+
 -The txt file need to contain in the first 2 lines an execution of OpenServerCommand and a ConnectCommand.
+
 -The names of the following commands in the txt file are case sensitive
+
 -Expressions have to contain equal number of ( ) meaning that each opening ( needs to have a closing one.
+
 -Any expression in an unary operator needs to be wrapped with ( ).
+
 -Any variable that is in an expression needs to be define before the decleration as we will soon see.
+
 -IP needs to be wrapped by "".
+
 -Declerations on string need to be wrapped by "" - on printing for example.
+
+-In the end of the txt file write ```Print("done")```
+
 * OpenServerCommand:Opens a server on a given port that runs in the background throught\ the whole program.
   Gets a port as a number or an expression.
+  The string token key is ```openDataServer```
+  The next first token is the port.
  example:
   ```
   openDataServer(5400)
   openDataServer(5400 + 2)
   ```
 * ConnectCommand:Connects us as a client to the simulator as a server at given ip, on a given port.
-Ip needs to be wrapped between " ", and the port is a number
+Ip needs to be wrapped between " ", and the port is a number or math expression.
+ The string token key is ```connectControlClient```.
+ The next 2 tokens are the ip and the port.
+
 example:
   ```
   connectControlClient("127.0.0.1",5402)
   ```
-* PrintCommand:
+* PrintCommand:Prints a number, a string, value of an existing variable or an expression with variables and number.
+  The string token key is ```Print```
+  The next first token is the parameter.
  
  example:
   ```
@@ -147,27 +163,41 @@ example:
   Print(1000)
   Print("lets fly")
   ```
-* SleepCommand:
- 
+* SleepCommand:Sleeps for a given number of milliseconds. can be an existing variable or math expressions.
+   The string token key is ```Sleep```
+   The first next token is the parameter
+
  example:
   ```
   Sleep(1000)
   Sleep(alt)
   ```
-* DefineVarCommand:
+* DefineVarCommand:Defining a new variable.
+  The "syntax" is : ``` var varName = OR -> OR -< sim("/simulatorpath/to/value")```.
+  varName can start with _ and a letter char and then numbers and letters.
+  -> means we update the simulator at a given path, <- means we read from the simulator the matched value by the given path,
+  = mean we want to assign a value or a value of expression..
+  The string token key is ```var```
+  The next 3 tokens are the name, binding direction or a = and an expression or simulator path.
  
  example:
   ```
   var magnetos -> sim("/controls/switches/magnetos")
   var h0 = heading
   ```
-* VarAssignmentCommand:
+* VarAssignmentCommand: Assigning a new value to an existing variable.
+  The string token key is a var name that exists in the symboltable.
+  the next token is the value or an exprssion.
  
  example:
   ```
   h0 = heading
   ```
-* IfCommand:
+* IfCommand:Implements an if conditoin.
+  The string token is ```if```.
+  The next 2 tokens are :The boolean expression the boolean opertaor can be  == != < > <= >=
+  and a openning {.
+  After the innercommands comes a closing }.
  
  example:
   ```
@@ -182,6 +212,10 @@ example:
   ```
  
 * LoopCommand:
+  The string token is ```while```.
+  The next 2 tokens are :The boolean expression the boolean opertaor can be  == != < > <= >=
+  and a openning {.
+  After the innercommands comes a closing }.
  
  example:
   ```
@@ -195,10 +229,14 @@ example:
     }
   ```
   Both LoopCommand and IfCommand inherits a class (that inherits The Command class) called ConditionParser,
-  that has a member of ```vector<Command*>``` as the inner commands. 
-* DefineFuncCommand:
- 
+  that has a member of ```vector<Command*>``` as the inner commands. In the execute function, the tokens vector will be iterated and inner commands that are between the {} will be inserted to the vector untill we find a }.
+  If and while loops cannot contain new varaibles definings, an inner if and whiles, and a new function defining.
+  
+* DefineFuncCommand:Defining a new function and inserts it as a new command (instance of FuncCommand)to the
+```commands_map```.
+    The string token is not an exisitng commnad string key or "var" or "if" or "while" or a var name.
  example:
+ 
   ```
     takeoff(var x) {
    Print(x)
@@ -212,31 +250,24 @@ example:
      }
   }
   ```
-* FuncCommand:
+* FuncCommand:Executes a costume function. Can get one parameter as a number.
+  The string token is the name of the function.
+  The next token is the parameter number.
  
  example
   ```
   takeoff(1000)
   ```
 
-So, first we want to open a server at a given port ,and wait for the simulator to connect as a client. Using the OpenServerCommand, we initialize a thread of executing the OpenServerCommand, so the server that we open will always run in the background.
+So, first we want to open a server at a given port ,and wait for the simulator to connect as a client. Using the      ```OpenServerCommand```, we initialize a thread of executing the ```OpenServerCommand```, so the server that we open will always run in the background.
 The simulator sends 10 times in a second 36 value separated by commas(The simulator used the generic_small.xml file from previous topic), and once the simulator connects, we'll initialize a thread that start reading the values and updating the matched values in the matched indexes bt separating each line of 36 values. 
-In the meantime, we initialize a thread of ConnectCommand that connects us as a clinet (by a given IP and a port) to the simulator that will be used as our server and that thread will be always running so we can send a request to set a new value to a simulator path.
+In the meantime, we initialize a thread of ```ConnectCommand``` that connects us as a clinet (by a given IP and a port) to the simulator that will be used as our server and that thread will be always running so we can send a request to set a new value to a simulator path.
 
-In this project the local host is the server and the client.
+In this project the local host is a server and a client.
 
-After those, we can continue iterating over the tokens vector and indetify wanted command by sending the tokensVector.at(index)
-to the command map.
+After those, we can continue iterating over the tokens vector and indetify wanted command by sending the ```tokensVector.at(index)``` to the command map.
 
 Once we get to part of executing the PrintCommand with the string "done" the program will finish.
-
-### Possible changes / improvments
-
-* Implementing Singleton DP on The SymbolTable and the InterpreterTool members of the Parser,
-  as well the Parser itself.
-* Improve the FuncCommand and DefineFuncCommand to support multiple parameters of a function.
-
-
 
 
 # Part #2

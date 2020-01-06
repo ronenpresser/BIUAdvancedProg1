@@ -11,13 +11,24 @@ In this first milestone of the project, we'll make a code parser that will remot
 The parser will identify commands from a given txt file that contains the code, and execute them.
 
 ### Getting Started and Prerequisites
-1.
+In general, we need 3 things. The program itself, a txt file containing code that we want to parse and the flightgear flight simulator.
+
+To get started and operate the program, follow the next steps.
+1.Download the following files to your comupter and place it under a new folder:
+```
+Command.cpp, Command.h,InterpretTool.cpp.InterpretTool.h, Expression.cpp, Expression.h, Lexer.cpp, Lexer.h, Parser.cpp, Parser.h, main.cpp
+```
+
+
 2.
 3.
 4.
 5.
 
 ### General explanations on the code parser - how does it work
+
+
+
 We will use the Command DP to parse the code in a given txt file and fly the simulator.
 
 There are 2 main parts:
@@ -26,6 +37,12 @@ There are 2 main parts:
 func lexer(string filePath)
 The goal of the lexing part is to make a vector of tokens made of a given txt file with the code that will fly the plane.
 Each line in the txt file contains a command that is needed to be executed and dividing each line to those tokens will help us determine which commands we need to execute in the next part.This class has only one function: lexer
+
+
+main.cpp :
+The only thing that the main does is lexing the given txt file
+and send the token vector to the parse function of the parser
+and start parsing:
 
 #### The parser part: Class Parser 
 func parse(vector<string> tokensVector)

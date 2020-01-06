@@ -270,6 +270,10 @@ After those, we can continue iterating over the tokens vector and indetify wante
 Once we get to part of executing the PrintCommand with the string "done" the program will finish.
 
 
+### Possible changes / improvments
+-Implementing Singleton DP on the Parser,SymbolTable and the InterpretTool.
+-Instead of sending the tokens vector and the current index in the ```execute``` function, send an iterator of the vector.
+
 # Part #2
 In this second milestone of the project, we'll
 

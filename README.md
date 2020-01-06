@@ -49,7 +49,7 @@ through loclahost (127.0.0.1) on port 5402.
 The second line tells the simulator to connect as a client to the server that we will build, through localhost on port 5400
 as tcp client, and to sameple and send to the server 10 times per second values determined by the xml file ```generic_small```.
 
-5.Now open a terminal or a cmd through the new folder we created in the first instuction and type the following line:
+5.Now we need to compile the code. Open a terminal or a cmd through the new folder we created in the first instuction and type the following line:
 ```
 g++ -std=c++14 *.cpp -pedantic -o a.out -pthread
 ```
@@ -62,7 +62,7 @@ Open terminal and run the following:
 (The program works on c++14 and bellow).
 
 6.Once a file called a.out is created, run the line:
-```./a.out FILE_WITH_CODE.txt ``` as FILE_WITH_CODE.txt needs to be the path of file with the code we want to parse,
+```./a.out FILE_WITH_CODE.txt ```  as FILE_WITH_CODE.txt needs to be the path of file with the code we want to parse,
 for example you can take the ```fly.txt```. If you only write the name of the file, it needs to be in the same folder
 that we execute the program from. Or you enter a whole path to the file.
 
@@ -88,14 +88,16 @@ The only thing that the main does is lexing the given txt file(as an argument) a
 func parse(vector<string> tokensVector)
 The goal of the parsing part is to parse - to take the tokens vector from the lexer, iterate over it and execute the matched commands by a current token.
 On creation, 2 maps of the parser will be built in a hard coded way:
+  
   1.command_map:
     The keys are names of usable commands and the values are Command objects
+    
   2.indexToSimulatorPathMap:
-    The keys are numbers from 0 to 35 and the values are strings that are paths of the simulator - taken from the generic_small.xml
-    file that the simulator samples from and sends it 10 times very seconds.
+    The keys are numbers from 0 to 35 and the values are strings that are paths of the simulator - taken from the ```generic_small.xml ``` file that the simulator samples from and sends it 10 times very seconds
+
 The parser class has 5 main members:
 * command_map: 
-  A map of strings as keys(names of commands)and Commands as value. will be used on the parsing part, well send a token to get a wanted     Command to execute.
+  A map of strings as keys(names of commands)and Commands as value. will be used on the parsing part, well send a token to get a wanted Command to execute.
 * symbol_table:
   An object of SymbolTable class that contains a map of strings as keys - variables names and Variable pointers as values.
 * simPathToVarMap:

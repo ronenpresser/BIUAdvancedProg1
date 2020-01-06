@@ -54,13 +54,48 @@ The execute function returns a int number, that represents the steps that the pa
 This function gets 3 parameters:The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
 * OpenServerCommand:
+  example:
+  openDataServer(5400)
 * ConnectCommand:
+  example:
+  connectControlClient("127.0.0.1",5402)
 * PrintCommand:
+  example:
+  Print(alt)
+  Print(1000)
+  Print("lets fly")
 * SleepCommand:
+  example:
+  Sleep(1000)
+  Sleep(alt)
 * DefineVarCommand:
+  example:
+  var magnetos -> sim("/controls/switches/magnetos")
+  var h0 = heading
 * VarAssignmentCommand:
+  example:
+  h0 = heading
 * IfCommand:
+  example:
+  if alt < x {
+    rudder = (h0 - (heading))/80
+    aileron = -(roll) / 70
+    elevator = pitch / 50
+    Print(alt)
+    Sleep(250)
+    Print(x)
+  }
 * LoopCommand:
+  '''
+  while alt < x {
+    rudder = (h0 - (heading))/80
+    aileron = -(roll) / 70
+    elevator = pitch / 50
+    Print(alt)
+    Sleep(250)
+    Print(x)
+    }
+  '''
 * DefiningFuncCommand:
 * FuncCommand:
 

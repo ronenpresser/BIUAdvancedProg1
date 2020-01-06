@@ -117,7 +117,7 @@ There are 10 commands (classes) that can be executed, all inherits the Command c
 The execute function returns a int number, that represents the steps that the parser need to skip in the tokens vector, to get to the next token of command.
 This function gets 3 parameters: The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
-**Conventions for the txt file:
+**Conventions for the txt file:**
 
 **Important - if the file does not have execution of OpenServerCommand and then a ConnectCommand after it, the program will exit.**
 

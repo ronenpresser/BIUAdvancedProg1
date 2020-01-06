@@ -117,12 +117,12 @@ There are 10 commands (classes) that can be executed, all inherits the Command c
 The execute function returns a int number, that represents the steps that the parser need to skip in the tokens vector, to get to the next token of command.
 This function gets 3 parameters: The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
-Conventions for the txt file:
+**Conventions for the txt file:
 
--The txt file need to contain in the first 2 lines an execution of OpenServerCommand and a ConnectCommand.
+**Important - if the file does not have execution of OpenServerCommand and then a ConnectCommand after it, the program will exit.**
 
--The names of the following commands in the txt file are case sensitive
-
+-The txt file need to contain 2 lines of execution of OpenServerCommand and a ConnectCommand. First the OpenServerCommand,
+  then the ConnectCommand.
 -Expressions have to contain equal number of ( ) meaning that each opening ( needs to have a closing one.
 
 -Any expression in an unary operator needs to be wrapped with ( ).
@@ -134,6 +134,10 @@ Conventions for the txt file:
 -Declerations on string need to be wrapped by "" - on printing for example.
 
 -In the end of the txt file write ```Print("done")```
+
+-The names of the following commands in the txt file are case sensitive
+
+**Commands**
 
 * OpenServerCommand:Opens a server on a given port that runs in the background throught\ the whole program.
   Gets a port as a number or an expression.

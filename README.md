@@ -119,7 +119,7 @@ This function gets 3 parameters: The tokens vector, the current index of the tok
 
 **Conventions for the txt file:**
 
-**Important - if the file does not have execution of OpenServerCommand and then a ConnectCommand after it, the program will exit.**
+**Important - if the file does not have execution of OpenServerCommand and then a ConnectCommand after it, the program will exit, and those can be exectued only ONCE.In addition, variable assignment command can be with local variables, and without simulator path (with <- or ->).**
 
 -The txt file need to contain 2 lines of execution of OpenServerCommand and a ConnectCommand. First the OpenServerCommand,
   then the ConnectCommand.

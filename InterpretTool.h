@@ -209,7 +209,7 @@ class BooleanExpression : public BinaryOperator {
                                                                                                      rightExp) {
     boolCon = boolOperator;
     //<,>,<=,>=,==,!=
-
+    //The key is the string of the boolean operator and and value is a boolean value that a lambda function returns.
     auto stringBoolPairL = make_pair(
         "<",
         [](const double &leftE, const double &rightE) {
@@ -241,7 +241,6 @@ class BooleanExpression : public BinaryOperator {
           return leftE != rightE;
         });
     boolOperators.insert(stringBoolPairNE);
-
   }
 
   virtual ~BooleanExpression() {}

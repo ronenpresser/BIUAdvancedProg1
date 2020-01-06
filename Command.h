@@ -23,11 +23,11 @@ class Command {
  public:
   /**
  *
- * Executes the VarAssignmentCommand.
+ * Executes the Command.
  *
  * @param tokensVec Vector of tokens for the specific command to take its parameters/parts
  * @param currIndex Current index in the interating on the vector of tokens.
- * @param pars The parser to use functions(accessing data sturctues etc) from it as needed.
+ * @param pars The parser to use functions(accessing data structures etc) from it as needed.
  * @return Steps number to skip to the next command token.
  */
   virtual int execute(vector<string> &, int, Parser *) = 0;

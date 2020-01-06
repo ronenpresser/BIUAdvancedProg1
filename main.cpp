@@ -6,7 +6,6 @@
 
 int main(int argc, char const *argv[]) {
 
-  //TODO change the path to argv
   try {
     vector<string> tokens;
     try {

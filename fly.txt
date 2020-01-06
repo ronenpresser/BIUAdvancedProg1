@@ -48,6 +48,31 @@ var h0 = heading
 breaks = 0
 throttle = 1
 Print("before while")
+var a = 3
+var b = 6
+while a < b {
+  Print(a)
+  a = a + 1
+}
+if a == b {
+  Print("a == b")
+}
+a = 8
+if a > b {
+  Print("a > b")
+}
+if a != b {
+  Print("a != b")
+}
+if a >= b {
+  Print("a >= b")
+}
+b = 9
+if a <= b {
+  Print("a <= b")
+}
+
+
 while alt < 1000 {
   Print(alt)
   rudder = (h0 - (heading))/80

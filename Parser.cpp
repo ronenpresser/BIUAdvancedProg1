@@ -23,13 +23,21 @@ void executeCommandFunc(Command *c, vector<string> tokensVec, int currIndex, Par
 void Parser::parse(vector<string> tokensVec) {
   unsigned int index = 0;
   string token;
-  //open the server with a thread
   //find the openDataServer command.
   auto it = find(tokensVec.begin(), tokensVec.end(), "openDataServer");
   if (it == tokensVec.end()) {
-    cerr << "No opening server command found" << endl;
-    exit;
+    cerr << "No openDataServer found" << endl;
+    exit(EXIT_FAILURE);
   }
+  //find the connectControlClient command.
+  auto it2 = find(tokensVec.begin(), tokensVec.end(), "connectControlClient");
+  if (it2 == tokensVec.end()) {
+    cerr << "No connectControlClient found" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+
+  //open the server with a thread
   //Get the index of the token.
   index = std::distance(tokensVec.begin(), it);
   //open the thread
@@ -38,13 +46,9 @@ void Parser::parse(vector<string> tokensVec) {
   tokensVec.erase(it);
   tokensVec.erase(it);
 
+
+
   //connect as a client with a thread
-  //find the connectControlClient command.
-  auto it2 = find(tokensVec.begin(), tokensVec.end(), "connectControlClient");
-  if (it2 == tokensVec.end()) {
-    cerr << "No connectControlClient found" << endl;
-    exit;
-  }
   //Get the index of the token.
   index = std::distance(tokensVec.begin(), it2);
   //Open the thread

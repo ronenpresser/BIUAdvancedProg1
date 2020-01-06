@@ -86,7 +86,8 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
     Print(x)
   }
 * LoopCommand:
-  '''
+  
+  ```
   while alt < x {
     rudder = (h0 - (heading))/80
     aileron = -(roll) / 70
@@ -95,6 +96,8 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
     Sleep(250)
     Print(x)
     }
+  ```
+  
   '''
 * DefiningFuncCommand:
 * FuncCommand:

@@ -72,8 +72,9 @@ if a <= b {
   Print("a <= b")
 }
 
-
+Print(alt)
 while alt < 1000 {
+  Print("in while")
   Print(alt)
   rudder = (h0 - (heading))/80
   aileron = -(roll) / 70
@@ -81,7 +82,7 @@ while alt < 1000 {
   blc=1
   Sleep(19)
   blc=0
-  Sleep(250)
+  Sleep(1000)
 }
 
 Print("done")

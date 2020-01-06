@@ -386,6 +386,7 @@ int VarAssignmentCommand::execute(vector<string> &tokensVec, int currIndex, Pars
       if (return_val == -1) {
         done = true;
         pars->shouldStopParsing = true;
+        throw "error";
       }
     }
     pars->updateValue(tokensVec.at(currIndex), val);

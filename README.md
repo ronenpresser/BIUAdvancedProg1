@@ -39,7 +39,7 @@ That will copy the file.
 The file is going to determine which values the simulator is going to send us when we connect to it as a client ,as we will soon see.
 The xml file has 36 pathes that are used as directories in the telnet interface of the simulator, and each of the path is a value of a variable in the simulator.
 
-4.Open the simulator and go to settings -> additional settings. You'll need to write (char by char) the following lines there:
+4.Open the Flightgear simulator and go to settings -> additional settings. You'll need to write (char by char) the following lines there:
 ```
 --telnet=socket,in,10,127.0.0.1,5402,tcp
 --generic=socket,out,10,127.0.0.1,5400,tcp,generic_small
@@ -61,13 +61,18 @@ Open terminal and run the following:
 ```sudo apt install g++```
 (The program works on c++14 and bellow).
 
-6.Once a file called a.out is created, run the line:
+6.Once a file called a.out is created, run the line (from the folder that contains the files):
 ```./a.out FILE_WITH_CODE.txt ```  as FILE_WITH_CODE.txt needs to be the path of file with the code we want to parse,
 for example you can take the ```fly.txt```. If you only write the name of the file, it needs to be in the same folder
 that we execute the program from. Or you enter a whole path to the file.
+If you want to make your own ```fly.txt``` file, your are welcome to do so. In the next section you'll see examples and
+conventions.
+
+7.The program is waiting for a client to connect to a server that we will open, so we need to enter the simulator so it can connect.
+Click on the "Fly!" button in the flightgear simulator and watch the plane fly.
+
 
 ### General explanations on the code parser - how does it work
-
 
 We will use the Command DP to parse the code in a given txt file and fly the simulator.
 
@@ -78,6 +83,8 @@ There are 2 main parts:
 func lexer(string filePath)
 The goal of the lexing part is to make a vector of tokens made of a given txt file with the code that will fly the plane.
 Each line in the txt file contains a command that is needed to be executed and dividing each line to those tokens will help us determine which commands we need to execute in the next part.This class has only one function: lexer
+
+
 
 
 ```main.cpp``` :
@@ -105,20 +112,30 @@ The parser class has 5 main members:
 * indexToSimPathMap:
   as written before, will be used to identify the values that we read from the simulator to update the matched Variables values.
 * interpret_tool - object of the class InterpretTool. The class is a tool for interpreting arithetic expressions that contain
-  variable names, number, arithmetic operators (* + - /) ,boolean operators (< > <= >= != ==) and parenthisess to an Expression
-  object recoursivly that can be calculated.
+  variable names, number, arithmetic operators (* + - /) ,boolean operators (< > <= >= != ==) and parenthisess to an Expression object recoursivly that can be calculated.
   
 There are 10 commands (classes) that can be executed, all inherits the Command class that has only one function - execute.
 The execute function returns a int number, that represents the steps that the parser need to skip in the tokens vector, to get to the next token of command.
-This function gets 3 parameters:The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
+This function gets 3 parameters: The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
-* OpenServerCommand:
+Conventions for the txt file:
+-The txt file need to contain in the first 2 lines an execution of OpenServerCommand and a ConnectCommand.
+-The names of the following commands in the txt file are case sensitive
+-Expressions have to contain equal number of ( ) meaning that each opening ( needs to have a closing one.
+-Any expression in an unary operator needs to be wrapped with ( ).
+-Any variable that is in an expression needs to be define before the decleration as we will soon see.
+-IP needs to be wrapped by "".
+-Declerations on string need to be wrapped by "" - on printing for example.
+* OpenServerCommand:Opens a server on a given port that runs in the background throught\ the whole program.
+  Gets a port as a number or an expression.
  example:
   ```
   openDataServer(5400)
+  openDataServer(5400 + 2)
   ```
-* ConnectCommand:
- example:
+* ConnectCommand:Connects us as a client to the simulator as a server at given ip, on a given port.
+Ip needs to be wrapped between " ", and the port is a number
+example:
   ```
   connectControlClient("127.0.0.1",5402)
   ```
@@ -202,8 +219,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   takeoff(1000)
   ```
 
-So, first we want to open a server at a given port ,and wait for the simulator to connect as a client. Using the OpenServerCommand,
-we initialize a thread of executing the OpenServerCommand, so the server that we open will always run in the background.
+So, first we want to open a server at a given port ,and wait for the simulator to connect as a client. Using the OpenServerCommand, we initialize a thread of executing the OpenServerCommand, so the server that we open will always run in the background.
 The simulator sends 10 times in a second 36 value separated by commas(The simulator used the generic_small.xml file from previous topic), and once the simulator connects, we'll initialize a thread that start reading the values and updating the matched values in the matched indexes bt separating each line of 36 values. 
 In the meantime, we initialize a thread of ConnectCommand that connects us as a clinet (by a given IP and a port) to the simulator that will be used as our server and that thread will be always running so we can send a request to set a new value to a simulator path.
 

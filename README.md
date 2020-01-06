@@ -14,6 +14,7 @@ The parser will identify commands from a given txt file that contains the code, 
 In general, we need 3 things. The program itself, a txt file containing code that we want to parse and the flightgear flight simulator.
 
 To get started and operate the program, follow the next steps.
+
 1.Download the following files to your comupter and place it under one new folder:
 ```
 main.cpp

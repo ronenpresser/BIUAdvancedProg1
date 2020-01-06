@@ -14,11 +14,15 @@ The parser will identify commands from a given txt file that contains the code, 
 In general, we need 3 things. The program itself, a txt file containing code that we want to parse and the flightgear flight simulator.
 
 To get started and operate the program, follow the next steps.
-1.Download the following files to your comupter and place it under a new folder:
+1.Download the following files to your comupter and place it under one new folder:
 ```
-Command.cpp, Command.h,InterpretTool.cpp.InterpretTool.h, Expression.cpp, Expression.h, Lexer.cpp, Lexer.h, Parser.cpp, Parser.h, main.cpp
+main.cpp
+Command.cpp, Command.h
+InterpretTool.cpp.InterpretTool.h 
+Expression.cpp, Expression.h 
+Lexer.cpp, Lexer.h
+Parser.cpp, Parser.h
 ```
-
 
 2.
 3.
@@ -26,7 +30,6 @@ Command.cpp, Command.h,InterpretTool.cpp.InterpretTool.h, Expression.cpp, Expres
 5.
 
 ### General explanations on the code parser - how does it work
-
 
 
 We will use the Command DP to parse the code in a given txt file and fly the simulator.
@@ -39,7 +42,7 @@ The goal of the lexing part is to make a vector of tokens made of a given txt fi
 Each line in the txt file contains a command that is needed to be executed and dividing each line to those tokens will help us determine which commands we need to execute in the next part.This class has only one function: lexer
 
 
-main.cpp :
+```main.cpp``` :
 The only thing that the main does is lexing the given txt file
 and send the token vector to the parse function of the parser
 and start parsing:
@@ -71,41 +74,41 @@ The execute function returns a int number, that represents the steps that the pa
 This function gets 3 parameters:The tokens vector, the current index of the tokens vector in the parsing part and the Parser.
 
 * OpenServerCommand:
-  example:
+ example:
   ```
   openDataServer(5400)
   ```
 * ConnectCommand:
-  example:
+ example:
   ```
   connectControlClient("127.0.0.1",5402)
   ```
 * PrintCommand:
-  example:
+ example:
   ```
   Print(alt)
   Print(1000)
   Print("lets fly")
   ```
 * SleepCommand:
-  example:
+ example:
   ```
   Sleep(1000)
   Sleep(alt)
   ```
 * DefineVarCommand:
-  example:
+ example:
   ```
   var magnetos -> sim("/controls/switches/magnetos")
   var h0 = heading
   ```
 * VarAssignmentCommand:
-  example:
+ example:
   ```
   h0 = heading
   ```
 * IfCommand:
-  example:
+ example:
   ```
    if alt < x {
     rudder = (h0 - (heading))/80
@@ -118,7 +121,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   ```
  
 * LoopCommand:
-  
+ example:
   ```
   while alt < x {
     rudder = (h0 - (heading))/80
@@ -132,7 +135,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   Both LoopCommand and IfCommand inherits a class (that inherits The Command class) called ConditionParser,
   that has a member of ```vector<Command*>``` as the inner commands. 
 * DefineFuncCommand:
-  example:
+ example:
   ```
     takeoff(var x) {
    Print(x)
@@ -147,7 +150,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   }
   ```
 * FuncCommand:
-  example
+ example
   ```
   takeoff(1000)
   ```

@@ -1,10 +1,11 @@
 # BIUAdvancedProgramming1
+By: Amit Twito, Ronen Presser
 
 link :
 https://github.com/ronenpresser/BIUAdvancedProg1
 
 ## Background on the project
-This project is a 2 parts assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++.
+This project is a 2 parts assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++ (c++14 and bellow).
 
 ## Part #1 -  FlightSimulator
 In this first milestone of the project, we'll make a code parser that will remote control a plane in a FlightGear simulator.
@@ -15,20 +16,55 @@ In general, we need 3 things. The program itself, a txt file containing code tha
 
 To get started and operate the program, follow the next steps.
 
-1.Download the following files to your comupter and place it under one new folder:
+1.Download the following files to your computer and place it under one new folder:
 ```
 main.cpp
 Command.cpp, Command.h
-InterpretTool.cpp.InterpretTool.h 
+InterpretTool.cpp, InterpretTool.h 
 Expression.cpp, Expression.h 
 Lexer.cpp, Lexer.h
 Parser.cpp, Parser.h
+generic_small.xml
+fly, fly1, fly_with_func.txt
 ```
+2.Go to https://www.flightgear.org/ and download the FlightGear flight simulator and install it.
+On linux, you can go to the app store and search for "flightgear" and install it from there.
 
-2.
-3.
-4.
-5.
+3.Once the installation ends, take the generic_small.xml file, open the installation folder of the flightgear
+and search for the folder "data". If it exists, go to the folder "protocol" and put the file in there.
+Else, search for the folder "protocol" in the main folder of the flightgear installation and put the file there.
+On linux, if you can't put the file in the folder, open terminal and enter the following command:
+```sudo cp /SOURCE_FOLDER_PATH/generic_small.xml /DESTINATION_FOLDER_PATH ```
+That will copy the file.
+The file is going to determine which values the simulator is going to send us when we connect to it as a client ,as we will soon see.
+The xml file has 36 pathes that are used as directories in the telnet interface of the simulator, and each of the path is a value of a variable in the simulator.
+
+4.Open the simulator and go to settings -> additional settings. You'll need to write (char by char) the following lines there:
+```
+--telnet=socket,in,10,127.0.0.1,5402,tcp
+--generic=socket,out,10,127.0.0.1,5400,tcp,generic_small
+```
+The first line tells the simulator to open in the background a connectable server with a telnet client,
+through loclahost (127.0.0.1) on port 5402.
+The second line tells the simulator to connect as a client to the server that we will build, through localhost on port 5400
+as tcp client, and to sameple and send to the server 10 times per second values determined by the xml file ```generic_small```.
+
+5.Now open a terminal or a cmd through the new folder we created in the first instuction and type the following line:
+```
+g++ -std=c++14 *.cpp -pedantic -o a.out -pthread
+```
+Make sure you have a g++ compiler installed : 
+windows:
+https://www.tutorialspoint.com/How-to-Install-Cplusplus-Compiler-on-Windows
+linux:
+Open terminal and run the following:
+```sudo apt install g++```
+(The program works on c++14 and bellow).
+
+6.Once a file called a.out is created, run the line:
+```./a.out FILE_WITH_CODE.txt ``` as FILE_WITH_CODE.txt needs to be the path of file with the code we want to parse,
+for example you can take the ```fly.txt```. If you only write the name of the file, it needs to be in the same folder
+that we execute the program from. Or you enter a whole path to the file.
 
 ### General explanations on the code parser - how does it work
 
@@ -38,17 +74,17 @@ We will use the Command DP to parse the code in a given txt file and fly the sim
 There are 2 main parts:
 
 #### The lexer part: Class Lexer 
+
 func lexer(string filePath)
 The goal of the lexing part is to make a vector of tokens made of a given txt file with the code that will fly the plane.
 Each line in the txt file contains a command that is needed to be executed and dividing each line to those tokens will help us determine which commands we need to execute in the next part.This class has only one function: lexer
 
 
 ```main.cpp``` :
-The only thing that the main does is lexing the given txt file
-and send the token vector to the parse function of the parser
-and start parsing:
+The only thing that the main does is lexing the given txt file(as an argument) and send the token vector to the parse function of the parser and start parsing:
 
 #### The parser part: Class Parser 
+
 func parse(vector<string> tokensVector)
 The goal of the parsing part is to parse - to take the tokens vector from the lexer, iterate over it and execute the matched commands by a current token.
 On creation, 2 maps of the parser will be built in a hard coded way:
@@ -85,6 +121,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   connectControlClient("127.0.0.1",5402)
   ```
 * PrintCommand:
+ 
  example:
   ```
   Print(alt)
@@ -92,23 +129,27 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   Print("lets fly")
   ```
 * SleepCommand:
+ 
  example:
   ```
   Sleep(1000)
   Sleep(alt)
   ```
 * DefineVarCommand:
+ 
  example:
   ```
   var magnetos -> sim("/controls/switches/magnetos")
   var h0 = heading
   ```
 * VarAssignmentCommand:
+ 
  example:
   ```
   h0 = heading
   ```
 * IfCommand:
+ 
  example:
   ```
    if alt < x {
@@ -122,6 +163,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   ```
  
 * LoopCommand:
+ 
  example:
   ```
   while alt < x {
@@ -136,6 +178,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   Both LoopCommand and IfCommand inherits a class (that inherits The Command class) called ConditionParser,
   that has a member of ```vector<Command*>``` as the inner commands. 
 * DefineFuncCommand:
+ 
  example:
   ```
     takeoff(var x) {
@@ -151,6 +194,7 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
   }
   ```
 * FuncCommand:
+ 
  example
   ```
   takeoff(1000)

@@ -1,4 +1,4 @@
-# BIUAdvancedProgramming1 - FlightSimulator
+# BIUAdvancedProgramming1
 
 link :
 https://github.com/ronenpresser/BIUAdvancedProg1
@@ -6,7 +6,7 @@ https://github.com/ronenpresser/BIUAdvancedProg1
 ## Background on the project
 This project is an assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++.
 
-## Part #1
+## Part #1 -  FlightSimulator
 In this first milestone of the project, we'll make a code parser that will remote control a plane in a FlightGear simulator.
 The parser will identify commands from a given txt file that contains the code, and execute them.
 

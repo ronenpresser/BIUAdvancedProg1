@@ -4,7 +4,7 @@ link :
 https://github.com/ronenpresser/BIUAdvancedProg1
 
 ## Background on the project
-This project is an assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++.
+This project is a 2 parts assignment as a part of a course called Advanced Programming 1 in our Computer Seince degree of second year in Bar Ilan University, written in c++.
 
 ## Part #1 -  FlightSimulator
 In this first milestone of the project, we'll make a code parser that will remote control a plane in a FlightGear simulator.
@@ -129,6 +129,8 @@ This function gets 3 parameters:The tokens vector, the current index of the toke
     Print(x)
     }
   ```
+  Both LoopCommand and IfCommand inherits a class (that inherits The Command class) called ConditionParser,
+  that has a member of ```vector<Command*>``` as the inner commands. 
 * DefineFuncCommand:
   example:
   ```
